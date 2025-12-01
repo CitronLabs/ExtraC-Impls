@@ -202,7 +202,7 @@ static List(graphicsDevice) getGraphicsDeviceList(){
 			del(device.name);
 			del(device.model);
 			del(device.manufacturer);
-			std.Utils.mem.dealloc(device.supportedModes);
+			free(device.supportedModes);
 		}
 		registered++;
 

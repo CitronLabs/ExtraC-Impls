@@ -59,8 +59,8 @@ Interface(C_GEN,
 #define bsearch(key, base, nitems, size, compar)        C.lib.utils.bsearch(key, base, nitems, size, compar)
 #define qsort(base, nitems, size, compar)               C.lib.utils.qsort(base, nitems, size, compar)
 #define calloc(nitems, size)                            C.lib.alloc.calloc(nitems, size)
-#define std.Utils.mem.dealloc(ptr)                                       C.lib.alloc.free(ptr)
-#define std.Utils.mem.alloc(size)                                    C.lib.alloc.malloc(size)
+#define free(ptr)                                       C.lib.alloc.free(ptr)
+#define malloc(size)                                    C.lib.alloc.malloc(size)
 #define alloca(size)                                    C.lib.alloc.alloca(size)
 #define realloc(ptr, size)                              C.lib.alloc.realloc(ptr, size)
 

@@ -31,21 +31,21 @@ DBusHandlerResult objectHandler(struct DBusConnection* connection, struct DBusMe
 		
 		// Open the array container for bytes (type 'ay')
 		if (!dbus_message_iter_open_container(&returnData, DBUS_TYPE_ARRAY, "y", &returnBytes)) {
-			std.Utils.mem.dealloc(serializedData);
+			free(serializedData);
 			dbus_message_unref(message);
 			return sendDBusError(msg, DBUSERR_FAILCREATE, "failed to open array container");
 		}
 		
 		// Append the binary data
 		if (!dbus_message_iter_append_fixed_array(&returnBytes, DBUS_TYPE_BYTE, &serializedData, serializedDataLen)) {
-			std.Utils.mem.dealloc(serializedData);
+			free(serializedData);
 			dbus_message_unref(message);
 			return sendDBusError(msg, DBUSERR_FAILCREATE, "failed append DSB data to array container");
 		}
 		
 		// Close the array container
 		if (!dbus_message_iter_close_container(&returnData, &returnBytes)) {
-			std.Utils.mem.dealloc(serializedData);
+			free(serializedData);
 			dbus_message_unref(message);
 			return sendDBusError(msg, DBUSERR_FAILCREATE, "failed to close array container");
 		}
@@ -53,7 +53,7 @@ DBusHandlerResult objectHandler(struct DBusConnection* connection, struct DBusMe
 		dbus_connection_send(connection, message, null);
 		dbus_message_unref(message);
 		dbus_message_unref(msg);
-		std.Utils.mem.dealloc(serializedData);
+		free(serializedData);
 	}
 
 return DBUS_HANDLER_RESULT_HANDLED;

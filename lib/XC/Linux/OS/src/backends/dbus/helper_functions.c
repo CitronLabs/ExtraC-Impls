@@ -148,7 +148,7 @@ static inline void* serializeNetObjData(netObjectData* object, u64* len){
 	  	);
 
 	u64 dataLen = DSN.formatDSB(dsbBuilder, null);
-	void* dsbData = std.Utils.mem.alloc(dataLen);
+	void* dsbData = malloc(dataLen);
 
 	DSN.formatDSB(dsbBuilder, dsbData);
 

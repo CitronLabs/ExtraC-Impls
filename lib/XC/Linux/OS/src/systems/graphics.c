@@ -201,7 +201,7 @@ graphicsHandle vmethodimpl(LinuxGraphics, grabDeviceAnyDirection, graphicsDevice
 	result->data.video.fd = open(envData->devPath->txt, O_RDWR);
 	
 	if(result->data.video.fd == -1){
-		std.Utils.mem.dealloc(result);
+		free(result);
 	}
 
 	// Set the video format
@@ -218,7 +218,7 @@ graphicsHandle vmethodimpl(LinuxGraphics, grabDeviceAnyDirection, graphicsDevice
 	
 	if (ioctl(result->data.video.fd, VIDIOC_S_FMT, &fmt) == -1) {
 		ERR(ERR_FAIL, "VIDIOC_S_FMT failed");
-		std.Utils.mem.dealloc(result);
+		free(result);
 		return null;
 	}
 
@@ -237,7 +237,7 @@ graphicsHandle vmethodimpl(LinuxGraphics, grabDeviceAnyDirection, graphicsDevice
 	if (ioctl(result->data.video.fd, VIDIOC_REQBUFS, &req) == -1) {
 		ERR(ERR_FAIL, "VIDIOC_S_FMT failed");
 		del(video->buffers)
-		std.Utils.mem.dealloc(result);
+		free(result);
 		return null;
 	}
 	
@@ -258,7 +258,7 @@ graphicsHandle vmethodimpl(LinuxGraphics, grabDeviceAnyDirection, graphicsDevice
 			del(video->buffers)
 			del(video->frames)
 			del(video->freeFrames)
-			std.Utils.mem.dealloc(result);
+			free(result);
 			return null;
 		}
 
@@ -270,7 +270,7 @@ graphicsHandle vmethodimpl(LinuxGraphics, grabDeviceAnyDirection, graphicsDevice
 			del(video->buffers)
 			del(video->frames)
 			del(video->freeFrames)
-			std.Utils.mem.dealloc(result);
+			free(result);
 			return null;
 		}
 

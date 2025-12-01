@@ -170,7 +170,7 @@ errvt methodimpl(OSDeviceManager, freeDevice, Device_ID id){
 		foreach(os->resources, OSDeviceResouce, resource){
 			if(resource.interface != null)
 				resource.interface->DESTROY(resource.object);
-			std.Utils.mem.dealloc(resource.object);
+			free(resource.object);
 		}
 	}
 
@@ -272,7 +272,7 @@ errvt imethodimpl(OSDeviceManager, Destroy){
 	            if(resource.interface != null)
 			resource.interface->DESTROY(resource.object);
 
-		    std.Utils.mem.dealloc(resource.object);
+		    free(resource.object);
 		}
 		del(os->uniqueID);
 	    }else{

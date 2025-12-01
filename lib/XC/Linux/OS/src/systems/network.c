@@ -15,7 +15,7 @@ static socklen_t XCAddrToUnix(u8 type, socketAddress* xc_addr, struct sockaddr* 
 	switch(type){
 	case D_IPV4:{
 	
-		std.Utils.mem.cpy(unix_addr, &(struct sockaddr_in){
+		memcpy(unix_addr, &(struct sockaddr_in){
  			.sin_family = AF_INET,
  			.sin_port = xc_addr->data.ipv4.port,
  			.sin_addr = ipv4addr_to_unix(xc_addr->data.ipv4.address)
@@ -24,7 +24,7 @@ static socklen_t XCAddrToUnix(u8 type, socketAddress* xc_addr, struct sockaddr* 
 	return sizeof(struct sockaddr_in);
   	}
 	case D_IPV6:{
- 		std.Utils.mem.cpy(unix_addr, &(struct sockaddr_in6){
+ 		memcpy(unix_addr, &(struct sockaddr_in6){
  			.sin6_family = AF_INET6,
  			.sin6_port = xc_addr->data.ipv6.port,
  			.sin6_addr = ipv6addr_to_unix(xc_addr->data.ipv6.address)
@@ -33,7 +33,7 @@ static socklen_t XCAddrToUnix(u8 type, socketAddress* xc_addr, struct sockaddr* 
 	return sizeof(struct sockaddr_in);
 	}
 	case D_LOCAL:{
- 		std.Utils.mem.cpy(unix_addr, &(struct sockaddr_un){
+ 		memcpy(unix_addr, &(struct sockaddr_un){
 			.sun_family = AF_LOCAL,
 			.sun_path = {0}
  		},
