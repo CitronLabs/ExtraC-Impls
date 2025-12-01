@@ -1,5 +1,11 @@
+#include "pkg.h"
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
- vmethodimpl(LinuxStorage, fs_open, bool DIR, fsPath path, int flags){
+import(std)
+
+int vmethodimpl(PosixIO, open, std_FSPath path, int flags){
 	
 	int fd = -1;
 
@@ -14,10 +20,11 @@
 		
 		}
 	}
-return (storageHandle)(u64)fd;
+
+return fd;
 }
 
-errvt vmethodimpl(LinuxStorage, fs_search, fsPath path, fsEntry* entry){
+errvt vmethodimpl(PosixIO, fs_search, std_FSPath path, std_FSEntry* entry){
 	nonull(path, return err);
 
 	struct stat statbuf;
@@ -29,15 +36,10 @@ errvt vmethodimpl(LinuxStorage, fs_search, fsPath path, fsEntry* entry){
 
 	if(entry == null) return OK;
 
-	inst(Time) time_buff = {0};
-
 	entry->type.is.dir = S_ISDIR(statbuf.st_mode);
 	
-	Time.FromCTime(time_buff, statbuf.st_ctim);
-	entry->time_created = time_buff;
-
-	Time.FromCTime(time_buff, statbuf.st_mtim);
-	entry->time_modified = time_buff;
+	entry->time_created = statbuf.st_ctim.tv_sec;
+	entry->time_modified = statbuf.st_mtim.tv_sec;
 
 	u32 nameoffset = 0, pathlen = strnlen(path, 255);
 	
@@ -52,7 +54,7 @@ errvt vmethodimpl(LinuxStorage, fs_search, fsPath path, fsEntry* entry){
 return OK;
 }
 
-errvt vmethodimpl(LinuxStorage, fs_delete, fsPath path){
+errvt vmethodimpl(PosixIO, fs_delete, fsPath path){
 	nonull(path, return err)	
 	if(-1 == remove(path)){
 		switch (errno) {
@@ -61,7 +63,7 @@ errvt vmethodimpl(LinuxStorage, fs_delete, fsPath path){
 	}
 return OK;
 }
-i64 vmethodimpl(LinuxStorage, read, storageHandle handle, void* buff, u64 size){
+i64 vmethodimpl(PosixIO, read, storageHandle handle, void* buff, u64 size){
 	nonull(buff, return err)
 	u64 bytesread = 0;
 	if(-1 == (bytesread = read(addrasval(handle), buff, size))){
@@ -76,7 +78,7 @@ return bytesread;
 
 
 
-i64 vmethodimpl(LinuxStorage, write, storageHandle handle, void* buff, u64 size){
+i64 vmethodimpl(PosixIO, write, storageHandle handle, void* buff, u64 size){
 	nonull(buff, return err)
 	u64 byteswritten = 0;
 	if(-1 == (byteswritten = write(addrasval(handle), buff, size))){
@@ -86,7 +88,7 @@ i64 vmethodimpl(LinuxStorage, write, storageHandle handle, void* buff, u64 size)
 	}
 return byteswritten;
 }
-errvt vmethodimpl(LinuxStorage, fs_chdir, fsPath path){
+errvt vmethodimpl(PosixIO, fs_chdir, fsPath path){
 	nonull(path, return err)
 	if(-1 == chdir(path)){
 		switch (errno) {
@@ -96,7 +98,7 @@ errvt vmethodimpl(LinuxStorage, fs_chdir, fsPath path){
 return OK;
 }
 
-errvt vmethodimpl(LinuxStorage, close, storageHandle handle){
+errvt vmethodimpl(PosixIO, close, storageHandle handle){
 	if(handle == (storageHandle)0 || handle == (storageHandle)1 || handle == (storageHandle)2) 
 		return ERR(ERR_INVALID, "cannot close the stdout, stdin, or stderr");
 	if((close(addrasval(handle))) == -1){
@@ -106,23 +108,3 @@ errvt vmethodimpl(LinuxStorage, close, storageHandle handle){
 	}
 return OK;
 }
-
-
-const ImplAs(storage, LinuxStorage){
-    .fs = {
-	.flags = {
-	  .WRITE 	= O_WRONLY,
-	  .ASYNC 	= O_NONBLOCK,
-	  .READ 	= O_RDONLY,
-	  .CREATE 	= O_CREAT,
-	  .APPEND 	= O_APPEND,
-	},
-	.open 	= LinuxStorage_fs_open,
-	.search = LinuxStorage_fs_search,
-	.delete = LinuxStorage_fs_delete,
-	.chdir 	= LinuxStorage_fs_chdir
-    },
-	.close 	= LinuxStorage_close,
-	.read 	= LinuxStorage_read,
-	.write 	= LinuxStorage_write,
-};
