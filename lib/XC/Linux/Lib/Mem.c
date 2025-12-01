@@ -2,8 +2,6 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-#define __XC_ENV_LIB_XC_IMPLEM_LIBC__
-
 #include "../pkg.h"
 
 import(Linux)
@@ -33,7 +31,7 @@ return mem.address;
 errvt lin_Lib_XC_Mem_dealloc(void* ptr, len_t num_pages){
 	lin_Memory mem = {
 		.address = ptr,
-		.userFlags = Linux.OS.Mem.Flag.READ | Linux.OS.Mem.Flag.WRITE,
+		.userFlags = 0,
 		.__private.size = num_pages * XC.Mem.getPageSize()
 	};
 
@@ -64,16 +62,16 @@ enum{
 };
 
 errvt lin_Lib_XC_Mem_protect(void* ptr, len_t num_pages, word permissions){
+	lin_Memory mem = {
+		.address = ptr,
+		.userFlags = 0,
+		.__private.size = num_pages
+	};
 	
+	if(permissions & XC.Mem.Perms.READ)  mem.__private.prot |= Linux.OS.Mem.Flag.READ;
+	if(permissions & XC.Mem.Perms.WRITE) mem.__private.prot |= Linux.OS.Mem.Flag.WRITE;
+	if(permissions & XC.Mem.Perms.EXEC)  mem.__private.prot |= Linux.OS.Mem.Flag.EXECUTE;
 
+return Linux.OS.Mem.setProt(&mem, mem.__private.prot);
 }
 
-errvt lin_Lib_XC_Mem_zero(void* ptr, len_t num_pages){
-
-
-}
-
-errvt lin_Lib_XC_Meme_syncCache(void* ptr, len_t size, word flags){
-
-
-}

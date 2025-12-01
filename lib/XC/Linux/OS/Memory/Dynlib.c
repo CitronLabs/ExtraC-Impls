@@ -22,7 +22,7 @@ return result;
 }
 
 DESTROY(lin_Dynlib){
-	nonull(self, return null);
+	nonull(self, return OK);
 
 	if (dlclose(priv.handle) != 0) 
 		return ERR(ERR_FAIL, "failed to close dynamic library");
@@ -36,7 +36,7 @@ DEF(),
 ){
 	void* dynlib = dlopen(arg.path, RTLD_LAZY);
 
-	if(dynlib == null){
+	if(dynlib == NULL){
 	    struct stat temp;
 	    if(stat(arg.path, &temp) == -1)
 	    	ERR(ERR_INVALID, "invalid dynamic lib path");

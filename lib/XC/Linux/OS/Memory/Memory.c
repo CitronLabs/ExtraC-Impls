@@ -14,7 +14,7 @@ import(XC)
 import(Linux)
 
 errvt methodimpl(lin_Memory, open, std_FSPath memObjPath){
-	nonull(memObjPath, return null);
+	nonull(memObjPath, return err);
 
 	priv.fd = shm_open(memObjPath, O_RDWR, 0666);
 	
@@ -27,14 +27,18 @@ return OK;
 errvt methodimpl(lin_Memory, setProt, u16 flags){
 	nonull(self, return err);
 
-	if (flags & Linux.OS.Mem.Flag.READ)    { priv.prot |= PROT_READ;  }
-	if (flags & Linux.OS.Mem.Flag.WRITE)   { priv.prot |= PROT_WRITE; }
-	if (flags & Linux.OS.Mem.Flag.EXECUTE) { priv.prot |= PROT_EXEC;  }
+	int prot = 0;
+
+	if (flags & Linux.OS.Mem.Flag.READ)    { prot |= PROT_READ;  }
+	if (flags & Linux.OS.Mem.Flag.WRITE)   { prot |= PROT_WRITE; }
+	if (flags & Linux.OS.Mem.Flag.EXECUTE) { prot |= PROT_EXEC;  }
 
 	if(this.address){
 	    if(mprotect(this.address, priv.size, priv.prot) == -1)
 		return ERR(ERR_FAIL, "failed to set memory");
 	}
+
+	priv.prot = prot;
 	
 return OK;
 }
@@ -109,7 +113,10 @@ DEF(
 .size = 1, 
 .flags = MEM_READ | MEM_WRITE
 ),
-	.Create = lin_Memory_Op_Create
+	.Create = lin_Memory_Op_Create,
+	.Destroy = lin_Memory_Op_Destroy,
+	.Set = lin_Memory_Op_Set,
+	.Size = lin_Memory_Op_Size
 ){
 	if (arg.flags & Linux.OS.Mem.Flag.READ)    { priv.prot |= PROT_READ;  }
 	if (arg.flags & Linux.OS.Mem.Flag.WRITE)   { priv.prot |= PROT_WRITE; }
