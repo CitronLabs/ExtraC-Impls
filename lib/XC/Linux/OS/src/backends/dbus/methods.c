@@ -59,12 +59,12 @@ DBusHandlerResult objectHandler(struct DBusConnection* connection, struct DBusMe
 return DBUS_HANDLER_RESULT_HANDLED;
 }
 
-errvt vmethodimpl(LinuxNetwork, NetObjectInit, netobjInfo* blueprint){
+errvt moduleFn(LinuxNetwork, NetObjectInit, netobjInfo* blueprint){
 	nonull(blueprint, 	     return err);
-	nonull(blueprint->interface, return err);
+	nonull(blueprint->interface){ return err; }
 
 	if(!blueprint->methods && !blueprint->field) 
-		return nullerr(methods and fields);
+		return nilerr(methods and fields);
 
 
 	inst nameBuilder = push(StringBuilder, .init_str = blueprint->interface);
@@ -213,9 +213,9 @@ return OK;
 }
 
 
-errvt vmethodimpl(LinuxNetwork, NetObjectImplement, netobjInfo* impl){
+errvt moduleFn(LinuxNetwork, NetObjectImplement, netobjInfo* impl){
 	nonull(impl, 	        return err);
-	nonull(impl->interface, return err);
+	nonull(impl->interface){ return err; }
 
 	inst nameBuilder = push(StringBuilder);
 
@@ -267,7 +267,7 @@ errvt vmethodimpl(LinuxNetwork, NetObjectImplement, netobjInfo* impl){
 return OK;
 }
 
-errvt vmethodimpl(LinuxNetwork, NetObjectGetInfo, strc8 path, netobjInfo* info){
+errvt moduleFn(LinuxNetwork, NetObjectGetInfo, strc8 path, netobjInfo* info){
 	nonull(path, return null);
 	nonull(info, return null);
 
@@ -346,7 +346,7 @@ errvt vmethodimpl(LinuxNetwork, NetObjectGetInfo, strc8 path, netobjInfo* info){
 return OK;
 }
 
-networkHandle vmethodimpl(LinuxNetwork, NetObjectFind, strc8 interfaceName, strc8 objectName){
+networkHandle moduleFn(LinuxNetwork, NetObjectFind, strc8 interfaceName, strc8 objectName){
 	nonull(interfaceName, return null);
 
 	inst nameBuilder = push(StringBuilder);
@@ -364,7 +364,7 @@ networkHandle vmethodimpl(LinuxNetwork, NetObjectFind, strc8 interfaceName, strc
 
 	if(!object){
 		ERR(DBUSERR_FAILCREATE, "interface/implementation doesnt exist");
-		return null;
+		return nil;
 	}
 
 	LinuxNetworkHandle* result = new(LinuxNetworkHandle,
@@ -373,19 +373,19 @@ networkHandle vmethodimpl(LinuxNetwork, NetObjectFind, strc8 interfaceName, strc
 				);
 return result;
 }
-DSN_data vmethodimpl(LinuxNetwork, NetObjectCall, networkHandle object, netCall_Flags flags, strc8 method, DSN_data* args){
+DSN_data moduleFn(LinuxNetwork, NetObjectCall, networkHandle object, netCall_Flags flags, strc8 method, DSN_data* args){
 
 
 }
-DSN_data vmethodimpl(LinuxNetwork, NetObjectGet, networkHandle object, netCall_Flags flags, strc8 field){
+DSN_data moduleFn(LinuxNetwork, NetObjectGet, networkHandle object, netCall_Flags flags, strc8 field){
 
 
 }
-errvt vmethodimpl(LinuxNetwork, NetObjectSet, networkHandle object, netCall_Flags flags, strc8 field, DSN_data value){
+errvt moduleFn(LinuxNetwork, NetObjectSet, networkHandle object, netCall_Flags flags, strc8 field, DSN_data value){
 
 
 }
 
-errvt vmethodimpl(LinuxNetwork, NetObjectClose, networkHandle handle){
+errvt moduleFn(LinuxNetwork, NetObjectClose, networkHandle handle){
 
 }

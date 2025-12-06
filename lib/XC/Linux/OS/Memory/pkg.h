@@ -1,14 +1,14 @@
 #pragma once
-#define __LINUX_OS__
+#define __ENV_LINUX_OS__
 #include "../pkg.h"
 
 
 
-#ifndef __LINUX_OS_MEMORY__
+#ifndef __ENV_LINUX_OS_MEMORY__
 	
 #include "types.h"
 
-#define package lin
+#define package env_Linux_OS
 
 Class(Dynlib,
 INIT(strc8 path),

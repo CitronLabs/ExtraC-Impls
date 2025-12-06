@@ -48,7 +48,7 @@ return result;
  *	  Method Implementations	|
 ======================================*/
 
-errvt methodimpl(OSDeviceManager, registerOSDevice, 
+errvt moduleMethod(OSDeviceManager, registerOSDevice, 
       	EnvDevice_Type envDevType, Device_ID envDevID, 
       	OSDevice_Type osDevType,   void* deviceData, 
 	Buffer(OSDeviceResouce) res
@@ -121,7 +121,7 @@ errvt methodimpl(OSDeviceManager, registerOSDevice,
 
 return OK;
 }
-errvt methodimpl(OSDeviceManager, addOSDeviceResources, Device_ID id, Buffer(OSDeviceResouce) res){
+errvt moduleMethod(OSDeviceManager, addOSDeviceResources, Device_ID id, Buffer(OSDeviceResouce) res){
 	
 	RegisteredDevice* device = List.GetPointer(priv.registeredDevices, id);
 
@@ -132,7 +132,7 @@ errvt methodimpl(OSDeviceManager, addOSDeviceResources, Device_ID id, Buffer(OSD
 
 return OK;
 }
-Device_ID methodimpl(OSDeviceManager, findDevice, inst(String) uniqueID){
+Device_ID moduleMethod(OSDeviceManager, findDevice, inst(String) uniqueID){
 
 	Device_ID* result = Map.Search(priv.deviceLookupTable, uniqueID);
 	
@@ -143,7 +143,7 @@ Device_ID methodimpl(OSDeviceManager, findDevice, inst(String) uniqueID){
 
 return *result;
 }
-bool methodimpl(OSDeviceManager, isConnected, Device_ID id){
+bool moduleMethod(OSDeviceManager, isConnected, Device_ID id){
 	RegisteredDevice* device = List.GetPointer(priv.registeredDevices, id);
 	
 	if(!device || device->isFree)
@@ -151,7 +151,7 @@ bool methodimpl(OSDeviceManager, isConnected, Device_ID id){
 
 return device->isAlive;
 }
-errvt methodimpl(OSDeviceManager, freeDevice, Device_ID id){
+errvt moduleMethod(OSDeviceManager, freeDevice, Device_ID id){
 	
 	RegisteredDevice* device = List.GetPointer(priv.registeredDevices, id),* parent = null;
 	
@@ -178,35 +178,35 @@ errvt methodimpl(OSDeviceManager, freeDevice, Device_ID id){
 
 return OK;
 }
-void* methodimpl(OSDeviceManager, getOSDevice, Device_ID id){
+void* moduleMethod(OSDeviceManager, getOSDevice, Device_ID id){
 	
 	RegisteredDevice* device = List.GetPointer(priv.registeredDevices, id);
 	
 	if(!device || !device->isOSDevice || device->isFree){
 		ERR(ERR_INVALID, "invalid OSdevice id");
-		return null;
+		return nil;
 	}
 	
 return &device->data.os.data;
 }
-void* methodimpl(OSDeviceManager, getEnvDevice, Device_ID id){
+void* moduleMethod(OSDeviceManager, getEnvDevice, Device_ID id){
 
 	RegisteredDevice* device = List.GetPointer(priv.registeredDevices, id);
 	
 	if(!device || device->isOSDevice || device->isFree){
 		ERR(ERR_INVALID, "invalid EnvDevice id");
-		return null;
+		return nil;
 	}
 	
 return &device->data.env.data;
 }
-void* methodimpl(OSDeviceManager, getEnvDeviceFromOSDevice, Device_ID id){
+void* moduleMethod(OSDeviceManager, getEnvDeviceFromOSDevice, Device_ID id){
 	
 	RegisteredDevice* device = List.GetPointer(priv.registeredDevices, id),* parent = null;
 	
 	if(!device || !device->isOSDevice || device->isFree){
 		ERR(ERR_INVALID, "invalid OSdevice id");
-		return null;
+		return nil;
 	}
 	
 	parent = List.GetPointer(priv.registeredDevices, device->data.os.envDeviceParent);
@@ -214,9 +214,9 @@ void* methodimpl(OSDeviceManager, getEnvDeviceFromOSDevice, Device_ID id){
 
 return &parent->data.env.data;
 }
-errvt methodimpl(OSDeviceManager, getEnvDevices, EnvDevice_Type type, inst(List) envDevicesList){
-	nonull(self, return err);
-	nonull(envDevicesList, return err);
+errvt moduleMethod(OSDeviceManager, getEnvDevices, EnvDevice_Type type, inst(List) envDevicesList){
+	nonull(self){ return err; }
+	nonull(envDevicesList){ return err; }
 
 	if(type > EnvDevice_Top)
 		return ERR(ERR_INVALID, "invalid env device type");
@@ -228,9 +228,9 @@ errvt methodimpl(OSDeviceManager, getEnvDevices, EnvDevice_Type type, inst(List)
 
 return OK;
 }
-errvt methodimpl(OSDeviceManager, getOSDevices, OSDevice_Type type, inst(List) osDevicesList){
-	nonull(self, return err);
-	nonull(osDevicesList, return err);
+errvt moduleMethod(OSDeviceManager, getOSDevices, OSDevice_Type type, inst(List) osDevicesList){
+	nonull(self){ return err; }
+	nonull(osDevicesList){ return err; }
 
 	if(type > OSDevice_Top)
 		return ERR(ERR_INVALID, "invalid env device type");
@@ -248,8 +248,8 @@ return OK;
  *     OSDeviceManager destructor	|
 --------------------------------------*/
 
-errvt imethodimpl(OSDeviceManager, Destroy){
-	nonull(object, return err);
+errvt moduleIMethod(OSDeviceManager, Destroy){
+	nonull(object){ return err; }
 	self(OSDeviceManager);
 
 	List(data_entry) lookupEntries = Map.GetEntries(priv.deviceLookupTable);

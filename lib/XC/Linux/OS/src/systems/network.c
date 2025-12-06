@@ -93,23 +93,23 @@ static errvt unixAddrToXCAddr(u8 type, struct sockaddr* unix_addr, socketAddress
 return OK;
 }
 
-errvt vmethodimpl(LinuxNetwork, initSystem){
+errvt moduleFn(LinuxNetwork, initSystem){
 	iferr(initNetObjectSystem()){
 		return err;
 	}
 return OK;
 }
-errvt vmethodimpl(LinuxNetwork, exitSystem){
+errvt moduleFn(LinuxNetwork, exitSystem){
 	iferr(exitNetObjectSystem()){
 		return err;
 	}
 return OK;
 }
 
-networkHandle vmethodimpl(LinuxNetwork, SocketInit, socketType type){
+networkHandle moduleFn(LinuxNetwork, SocketInit, socketType type){
 	if(type > 0b1111){
 		ERR(NETERR_SOCKINVAL, "invalid socket type out of range");
-		return null;
+		return nil;
 	}
 	int protocolFlag = (type & 0b11), domainFlag = (type & 0b1100) >> 2; 
 
@@ -127,10 +127,10 @@ networkHandle vmethodimpl(LinuxNetwork, SocketInit, socketType type){
 		-1;
 
 	if(-1 == domain ) {ERR(
-	      NETERR_SOCKINVAL, "invalid domain type"); return null;}
+	      NETERR_SOCKINVAL, "invalid domain type"); return nil;}
 	
 	if(-1 == protocol ) {ERR(
-	      NETERR_SOCKINVAL, "invalid protocol type"); return null;}
+	      NETERR_SOCKINVAL, "invalid protocol type"); return nil;}
 
 
 	LinuxNetworkHandle* result = new(LinuxNetworkHandle,
@@ -144,8 +144,8 @@ networkHandle vmethodimpl(LinuxNetwork, SocketInit, socketType type){
 
 return result;
 }
-errvt vmethodimpl(LinuxNetwork, SocketBind, networkHandle handle, socketAddress* address){
-	nonull(handle, return err);
+errvt moduleFn(LinuxNetwork, SocketBind, networkHandle handle, socketAddress* address){
+	nonull(handle){ return err; }
 	shortName(((LinuxNetworkHandle*)handle)->data.socket, socket);
 
 	socket->sizeofaddr = XCAddrToUnix(
@@ -164,27 +164,27 @@ errvt vmethodimpl(LinuxNetwork, SocketBind, networkHandle handle, socketAddress*
 
 return OK;
 }
-errvt vmethodimpl(LinuxNetwork, SocketListen, networkHandle handle, u32 num_connect){
-	nonull(handle, return err);
+errvt moduleFn(LinuxNetwork, SocketListen, networkHandle handle, u32 num_connect){
+	nonull(handle){ return err; }
 	shortName(((LinuxNetworkHandle*)handle)->data.socket, socket);
 
 	if(-1 == listen(socket->fd, num_connect)) return ERR(
 		NETERR_SOCKLISTEN, "failed to listen for connections");
 return OK;
 }
-networkHandle vmethodimpl(LinuxNetwork, SocketConnect, socketType type, socketAddress* address){
+networkHandle moduleFn(LinuxNetwork, SocketConnect, socketType type, socketAddress* address){
 
 	int protocolFlag = (type & 0b11), domainFlag = (type & 0b1100) >> 2; 
 
 	if(domainFlag != address->type){
 		ERR(ERR_INVALID, "socket domain type does not match address type");
-		return null;
+		return nil;
 	}
 
 	LinuxNetworkHandle* handle = LinuxNetwork_SocketInit(type);
 
-	if(!handle){
-		return null;
+	if(handle == nil){
+		return nil;
 	}
 	
 	shortName(((LinuxNetworkHandle*)handle)->data.socket, socket);
@@ -193,12 +193,12 @@ networkHandle vmethodimpl(LinuxNetwork, SocketConnect, socketType type, socketAd
 
 	if(-1 == connect(socket->fd, &socket->address, socket->sizeofaddr) ) {
 	      ERR(NETERR_CONNECT , "could not initialize connection");
-	      return null;
+	      return nil;
 	}
 
 return handle;
 }
-networkHandle vmethodimpl(LinuxNetwork, SocketAccept, networkHandle handle){
+networkHandle moduleFn(LinuxNetwork, SocketAccept, networkHandle handle){
 	nonull(handle, return null);
 	shortName(((LinuxNetworkHandle*)handle)->data.socket, socket);
 
@@ -207,7 +207,7 @@ networkHandle vmethodimpl(LinuxNetwork, SocketAccept, networkHandle handle){
 	int fd;
 	if(-1 ==(fd = accept(socket->fd, &address, &len)) ){
 		ERR(NETERR_CONNECT, "could not accept incoming socket connection");
-	      	return null;
+	      	return nil;
 	}
 	
 	LinuxNetworkHandle* result = new(LinuxNetworkHandle,
@@ -224,7 +224,7 @@ networkHandle vmethodimpl(LinuxNetwork, SocketAccept, networkHandle handle){
 
 return result;
 }
-errvt vmethodimpl(LinuxNetwork, SocketSend, networkHandle handle, inst(Buffer) message){
+errvt moduleFn(LinuxNetwork, SocketSend, networkHandle handle, inst(Buffer) message){
 	nonull(handle, return null);
 	shortName(((LinuxNetworkHandle*)handle)->data.socket, socket);
 
@@ -232,7 +232,7 @@ errvt vmethodimpl(LinuxNetwork, SocketSend, networkHandle handle, inst(Buffer) m
 		return ERR(NETERR_CONNSEND, "could not send data through connect");
 return OK;
 }
-errvt vmethodimpl(LinuxNetwork, SocketRecv, networkHandle handle, inst(Buffer) message){
+errvt moduleFn(LinuxNetwork, SocketRecv, networkHandle handle, inst(Buffer) message){
 	nonull(handle, return null);
 	shortName(((LinuxNetworkHandle*)handle)->data.socket, socket);
 	
@@ -241,8 +241,8 @@ errvt vmethodimpl(LinuxNetwork, SocketRecv, networkHandle handle, inst(Buffer) m
 return OK;
 
 }
-errvt vmethodimpl(LinuxNetwork, SocketGroupJoin, networkHandle handle, socketAddress address, const char* interface_name){
-	nonull(handle, return err);
+errvt moduleFn(LinuxNetwork, SocketGroupJoin, networkHandle handle, socketAddress address, const char* interface_name){
+	nonull(handle){ return err; }
 	shortName(((LinuxNetworkHandle*)handle)->data.socket, socket);
 
 	if(socket->domain != P_UDP ||
@@ -307,8 +307,8 @@ errvt vmethodimpl(LinuxNetwork, SocketGroupJoin, networkHandle handle, socketAdd
 	}
 return OK;
 }
-errvt vmethodimpl(LinuxNetwork, SocketGroupLeave, networkHandle handle){
-	nonull(handle, return err);
+errvt moduleFn(LinuxNetwork, SocketGroupLeave, networkHandle handle){
+	nonull(handle){ return err; }
 	shortName(((LinuxNetworkHandle*)handle)->data.socket, socket);
 
 	switch (socket->domain) {
@@ -344,8 +344,8 @@ errvt vmethodimpl(LinuxNetwork, SocketGroupLeave, networkHandle handle){
 return OK;
 
 }
-errvt vmethodimpl(LinuxNetwork, SocketGroupSend, networkHandle handle, inst(Buffer) message){
-	nonull(handle, return err);
+errvt moduleFn(LinuxNetwork, SocketGroupSend, networkHandle handle, inst(Buffer) message){
+	nonull(handle){ return err; }
 	shortName(((LinuxNetworkHandle*)handle)->data.socket, socket);
 
 	if(-1 == sendto(socket->fd, 
@@ -357,8 +357,8 @@ errvt vmethodimpl(LinuxNetwork, SocketGroupSend, networkHandle handle, inst(Buff
 		return ERR(NETERR_CONNSEND, "could not send data through connect");
 
 }
-errvt vmethodimpl(LinuxNetwork, SocketGroupRecive, networkHandle handle, inst(Buffer) message){
-	nonull(handle, return err);
+errvt moduleFn(LinuxNetwork, SocketGroupRecive, networkHandle handle, inst(Buffer) message){
+	nonull(handle){ return err; }
 	shortName(((LinuxNetworkHandle*)handle)->data.socket, socket);
 
 	if(-1 == recvfrom(socket->fd, 
@@ -372,18 +372,18 @@ return OK;
 }
 
 	
-networkHandle vmethodimpl(LinuxNetwork, DeviceGrab, networkDevice* device);
-errvt vmethodimpl(LinuxNetwork, DeviceDrop, networkHandle);
-networkDevice* vmethodimpl(LinuxNetwork, DeviceEnumerate, u64* numDevices);
-errvt vmethodimpl(LinuxNetwork, DeviceFilter);
-errvt vmethodimpl(LinuxNetwork, DeviceSend, inst(Buffer) message);
-errvt vmethodimpl(LinuxNetwork, DeviceRecv, inst(Buffer) message);
-errvt vmethodimpl(LinuxNetwork, DeviceWait, inst(Buffer) message);
+networkHandle moduleFn(LinuxNetwork, DeviceGrab, networkDevice* device);
+errvt moduleFn(LinuxNetwork, DeviceDrop, networkHandle);
+networkDevice* moduleFn(LinuxNetwork, DeviceEnumerate, u64* numDevices);
+errvt moduleFn(LinuxNetwork, DeviceFilter);
+errvt moduleFn(LinuxNetwork, DeviceSend, inst(Buffer) message);
+errvt moduleFn(LinuxNetwork, DeviceRecv, inst(Buffer) message);
+errvt moduleFn(LinuxNetwork, DeviceWait, inst(Buffer) message);
 
 
 
-errvt vmethodimpl(LinuxNetwork, handleEvents, networkHandle handle, Queue(OSEvent) evntQueue);
-u64   vmethodimpl(LinuxNetwork, pollEvents);
+errvt moduleFn(LinuxNetwork, handleEvents, networkHandle handle, Queue(OSEvent) evntQueue);
+u64   moduleFn(LinuxNetwork, pollEvents);
 
 const ImplAs(network, LinuxNetwork){
 	.initSystem = LinuxNetwork_initSystem,

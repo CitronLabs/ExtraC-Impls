@@ -22,28 +22,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ---------------------------------------------------------------------------*/
 #pragma once
+#define __ENV__
 
-#include <Core/pkg.h>
+#include "../pkg.h"
+#include "../Common/pkg.h"
 
 
-#ifndef __LINUX__
+#ifndef __ENV_LINUX__
 
 #include "OS/pkg.h"
 #include "Runtime/pkg.h"
 
-#define package lin
+#define package env
 
-Module(Linux){
+Interface(Linux,
   values(Version, word,
 	MAJOR,
 	MINOR,
 	PATCH
   )	
-	interface(lin_OS) 	OS;
-	interface(lin_Runtime) 	Runtime;
+	interface(env_Linux_OS) 		OS;
+	interface(env_Linux_Runtime) 	Runtime;
   
 
-};
+);
 
 #undef package
 

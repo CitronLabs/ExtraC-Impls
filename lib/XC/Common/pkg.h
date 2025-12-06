@@ -26,19 +26,19 @@ SOFTWARE.
 #include <Core/pkg.h>
 
 
-#ifndef __XC_IMPL_COMMON__
+#ifndef __ENV_COMMON__
 
 #include "Assembly/pkg.h"
 #include "Devices/pkg.h"
 #include "Posix/pkg.h"
 
-#define package Common
+#define package env
 
-Module(__XC_Impl_Common){
-  	interface(Common_Devices) Devices;
-  	interface(Common_Posix)   Posix;
+Interface(Common,
+  	interface(env_Common_DevicesManager) Devices;
+  	interface(env_Common_Posix)   	     Posix;
 
-};
+);
 
 #undef package
 

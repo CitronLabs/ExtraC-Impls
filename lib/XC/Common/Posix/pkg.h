@@ -1,18 +1,20 @@
 #pragma once
-#define __XC_IMPL_COMMON__
+#define __ENV_COMMON__
 #include "../pkg.h"
+#include "../Devices/pkg.h"
 
 
 
-#ifndef __XC_IMPL_COMMON_POSIX__
-#define package Common
+#ifndef __ENV_COMMON_POSIX__
+
+#include "types.h"
+
+#define package env_Common
+
 
 Interface(Posix,
-  namespace(IO,
-	
-
-  )
-
+  interface(env_Common_Posix_IO) IO;
+  interface(env_Common_Posix_Thread) Thread;
 )
 
 

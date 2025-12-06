@@ -219,13 +219,13 @@ static List(graphicsDevice) getGraphicsDeviceList(){
 
 	iferr(OSDeviceManager.getOSDevices(OSDevices, OSDevice_Graphics, result)){
 		ERR(ERR_FAIL, "failed to properly get graphic devices from device manager");
-		return null;
+		return nil;
 	}
 	
 return result;
 }
 
-errvt vmethodimpl(LinuxGraphics, initDisplaySystem){
+errvt moduleFn(LinuxGraphics, initDisplaySystem){
 	if(X11_EnvData.init)
 		return ERR(ERR_INITFAIL, "X11 already initialized");
 	
@@ -253,7 +253,7 @@ errvt vmethodimpl(LinuxGraphics, initDisplaySystem){
 
 return OK;
 }
-errvt vmethodimpl(LinuxGraphics, exitDisplaySystem){
+errvt moduleFn(LinuxGraphics, exitDisplaySystem){
 	if(!X11_EnvData.init) 
 		return ERR(ERR_FAIL, "display system not initialized");
 
@@ -271,14 +271,14 @@ errvt vmethodimpl(LinuxGraphics, exitDisplaySystem){
 return OK;
 }
 
-graphicsHandle vmethodimpl(LinuxGraphics, initDisplay, u32 x, u32 y, u32 w, u32 h, graphicsHandle parent){
+graphicsHandle moduleFn(LinuxGraphics, initDisplay, u32 x, u32 y, u32 w, u32 h, graphicsHandle parent){
 
 	//if parent == null then the 0th X11_Window will be selected which is the root window
 	X11_Window* parentData = List.GetPointer(X11_EnvData.windows, addrasval(parent));
 
 	if(!parentData){
 		ERR(ERR_INITFAIL, "could not find specified parent");
-		return null;
+		return nil;
 	}
 
 	Window parentWindow = parentData->window;
@@ -293,13 +293,13 @@ graphicsHandle vmethodimpl(LinuxGraphics, initDisplay, u32 x, u32 y, u32 w, u32 
 	};
 	if(win.window == None){
 		ERR(ERR_INITFAIL, "could not create window");
-		return null;
+		return nil;
 	}
 
 	iferr(List.Append(X11_EnvData.windows, &win, 1)){
 		XDestroyWindow(X11_EnvData.display, win.window);
 		ERR(ERR_INITFAIL, "failed to append window to X11 window list");
-		return null;
+		return nil;
 	}
 	
 	graphicsHandle result = (graphicsHandle)List.Size(X11_EnvData.windows);
@@ -307,14 +307,14 @@ graphicsHandle vmethodimpl(LinuxGraphics, initDisplay, u32 x, u32 y, u32 w, u32 
 return result;
 }
 
-graphicsDevice* vmethodimpl(LinuxGraphics, enumDevices, u64* num){
+graphicsDevice* moduleFn(LinuxGraphics, enumDevices, u64* num){
 	nonull(num, return null);
 
 	if(X11_EnvData.devices == null){
 		X11_EnvData.devices = getGraphicsDeviceList();
 		if(X11_EnvData.devices == null){
 			ERR(ERR_FAIL, "failed to enumerate display devices");
-			return null;
+			return nil;
 		}
 	}
 
@@ -323,14 +323,14 @@ graphicsDevice* vmethodimpl(LinuxGraphics, enumDevices, u64* num){
 return List.GetPointer(X11_EnvData.devices, 0);
 }
 
-graphicsHandle vmethodimpl(LinuxGraphics, grabDevice, graphicsDevice* device){
+graphicsHandle moduleFn(LinuxGraphics, grabDevice, graphicsDevice* device){
 	nonull(device, return null);
 	
 	X11_Window deviceWindow = {0};
 	deviceWindow.window = RootWindow(X11_EnvData.display, addrasval(device->uniqueID));
 	if(deviceWindow.window == None){
 		ERR(ERR_INITFAIL, "could not get the window for this display device");
-		return null;
+		return nil;
 	}
 	
 	deviceWindow.active = true;
@@ -341,8 +341,8 @@ graphicsHandle vmethodimpl(LinuxGraphics, grabDevice, graphicsDevice* device){
 return result;
 }
 
-errvt vmethodimpl(LinuxGraphics, closeDisplay, graphicsHandle handle){
-	nonull(handle, return err);
+errvt moduleFn(LinuxGraphics, closeDisplay, graphicsHandle handle){
+	nonull(handle){ return err; }
 	
 	X11_Window* win = List.GetPointer(X11_EnvData.windows, addrasval(handle));
 	
@@ -358,8 +358,8 @@ errvt vmethodimpl(LinuxGraphics, closeDisplay, graphicsHandle handle){
 return OK;
 }
 
-bool vmethodimpl(LinuxGraphics, isDisplayClosed, graphicsHandle handle){
-	nonull(handle, return err);
+bool moduleFn(LinuxGraphics, isDisplayClosed, graphicsHandle handle){
+	nonull(handle){ return err; }
 	
 	X11_Window* win = List.GetPointer(X11_EnvData.windows, addrasval(handle));
 	

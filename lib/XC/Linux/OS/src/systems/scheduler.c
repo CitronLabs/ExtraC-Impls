@@ -11,11 +11,11 @@ type(LinuxThread,
 	pthread_t thread;
 );
 
-void vmethodimpl(LinuxScheduler, sleep, u64 millisec){
+void moduleFn(LinuxScheduler, sleep, u64 millisec){
 	usleep(millisec);
 }
 
-threadHandle vmethodimpl(LinuxScheduler, initThread, void fn(startfn,void*), void* args){
+threadHandle moduleFn(LinuxScheduler, initThread, void fn(startfn,void*), void* args){
 	nonull(startfn, return null);
 
 	LinuxThread* result = new(LinuxThread);
@@ -65,7 +65,7 @@ processHandle parentProcessStart(u32 flags, processHandle child){
 return child;
 }
 
-processHandle vmethodimpl(LinuxScheduler, initProcess, strc8 exePath, strc8 args, u32 flags){
+processHandle moduleFn(LinuxScheduler, initProcess, strc8 exePath, strc8 args, u32 flags){
 	nonull(exePath, return null);
 
 	List(strc8) list = pushList(strc8, 10);
@@ -87,7 +87,7 @@ processHandle vmethodimpl(LinuxScheduler, initProcess, strc8 exePath, strc8 args
 		switch (errno) {
 		
 		}
-		return null;
+		return nil;
 	}
 	if(result == (processHandle)0)
 		childProcessStart(flags, exePath, List.GetPointer(list, 0));
@@ -99,8 +99,8 @@ processHandle vmethodimpl(LinuxScheduler, initProcess, strc8 exePath, strc8 args
 return result;
 }
 
-errvt vmethodimpl(LinuxScheduler, killProcess, processHandle handle){
-	nonull(handle, return err);
+errvt moduleFn(LinuxScheduler, killProcess, processHandle handle){
+	nonull(handle){ return err; }
 
 	if(kill(addrasval(handle), SIGTERM) == -1){
 		switch (errno) {
@@ -120,18 +120,18 @@ return OK;
 }
 
 
-threadHandle vmethodimpl(LinuxScheduler, getCurrentThread){
+threadHandle moduleFn(LinuxScheduler, getCurrentThread){
 	threadHandle result = (threadHandle)pthread_self();
 return result;
 }
 
 typedef struct {pthread_mutex_t mut;}lin_mutex;
 asClass(lin_mutex){ passover }
-mutexHandle vmethodimpl(LinuxScheduler, initMutex){
+mutexHandle moduleFn(LinuxScheduler, initMutex){
 	mutexHandle result = new(lin_mutex, PTHREAD_MUTEX_INITIALIZER);
 return result;
 }
-errvt vmethodimpl(LinuxScheduler, lockMutex, mutexHandle handle){
+errvt moduleFn(LinuxScheduler, lockMutex, mutexHandle handle){
 	if(pthread_mutex_lock(&((lin_mutex*)handle)->mut) == -1){
 		switch (errno) {
 		case EINVAL : { return ERR(ERR_FAIL, "invalid mutex"); }
@@ -142,7 +142,7 @@ errvt vmethodimpl(LinuxScheduler, lockMutex, mutexHandle handle){
 	}
 return OK;
 }
-errvt vmethodimpl(LinuxScheduler, unlockMutex, mutexHandle handle){
+errvt moduleFn(LinuxScheduler, unlockMutex, mutexHandle handle){
 	if(pthread_mutex_unlock(&((lin_mutex*)handle)->mut) == -1){
 		switch (errno) {
 		case EPERM  : { return ERR(ERR_FAIL, "The current thread does not own the mutex."); }
@@ -153,7 +153,7 @@ errvt vmethodimpl(LinuxScheduler, unlockMutex, mutexHandle handle){
 	}
 return OK;
 }
-errvt vmethodimpl(LinuxScheduler, tryLockMutex, mutexHandle handle){
+errvt moduleFn(LinuxScheduler, tryLockMutex, mutexHandle handle){
 	if(pthread_mutex_trylock(&((lin_mutex*)handle)->mut) == -1){
 
 		switch (errno) {
@@ -169,16 +169,16 @@ return OK;
 typedef struct {sem_t sem;}lin_semaphore;
 asClass(lin_semaphore){ passover }
 
-semaphoreHandle vmethodimpl(LinuxScheduler, initSemaphore, len_t num){
+semaphoreHandle moduleFn(LinuxScheduler, initSemaphore, len_t num){
 	lin_semaphore* result = new(lin_semaphore);
 	sem_init(&result->sem, 0, num);
 	switch (errno) {
-	case EINVAL: { ERR(ERR_INVALID, "value exceeds SEM_VALUE_MAX"); return null; } 
+	case EINVAL: { ERR(ERR_INVALID, "value exceeds SEM_VALUE_MAX"); return nil; } 
 	}
 return result;
 }
 
-errvt vmethodimpl(LinuxScheduler, waitSemaphore, semaphoreHandle handle){
+errvt moduleFn(LinuxScheduler, waitSemaphore, semaphoreHandle handle){
 	if(sem_wait(&((lin_semaphore*)handle)->sem) == -1){
 		switch (errno) {
 		
@@ -186,7 +186,7 @@ errvt vmethodimpl(LinuxScheduler, waitSemaphore, semaphoreHandle handle){
 	}
 return OK;
 }
-errvt vmethodimpl(LinuxScheduler, postSemaphore, semaphoreHandle handle){
+errvt moduleFn(LinuxScheduler, postSemaphore, semaphoreHandle handle){
 	if(sem_post(&((lin_semaphore*)handle)->sem) == -1){
 		switch (errno) {
 		
@@ -194,7 +194,7 @@ errvt vmethodimpl(LinuxScheduler, postSemaphore, semaphoreHandle handle){
 	}
 return OK;
 }
-errvt vmethodimpl(LinuxScheduler, tryWaitSemaphore, semaphoreHandle handle){
+errvt moduleFn(LinuxScheduler, tryWaitSemaphore, semaphoreHandle handle){
 	if(sem_wait(&((lin_semaphore*)handle)->sem) == -1){
 		switch (errno) {
 		
@@ -203,13 +203,13 @@ errvt vmethodimpl(LinuxScheduler, tryWaitSemaphore, semaphoreHandle handle){
 return OK;
 }
 
-errvt vmethodimpl(LinuxScheduler, handleProcEvents, processHandle process, Queue(OSEvent) evntQueue){}
-errvt vmethodimpl(LinuxScheduler, handleThrdEvents, threadHandle thread, Queue(OSEvent) evntQueue){}
-errvt vmethodimpl(LinuxScheduler, waitThread){}
-bool vmethodimpl(LinuxScheduler,  isProcessRunning){}
-u64 vmethodimpl(LinuxScheduler,   pollEvents){}
-errvt vmethodimpl(LinuxScheduler, initSystem){}
-errvt vmethodimpl(LinuxScheduler, exitSystem){}
+errvt moduleFn(LinuxScheduler, handleProcEvents, processHandle process, Queue(OSEvent) evntQueue){}
+errvt moduleFn(LinuxScheduler, handleThrdEvents, threadHandle thread, Queue(OSEvent) evntQueue){}
+errvt moduleFn(LinuxScheduler, waitThread){}
+bool moduleFn(LinuxScheduler,  isProcessRunning){}
+u64 moduleFn(LinuxScheduler,   pollEvents){}
+errvt moduleFn(LinuxScheduler, initSystem){}
+errvt moduleFn(LinuxScheduler, exitSystem){}
 
 const ImplAs(scheduler, LinuxScheduler){
 	.pollEvents 	   	= LinuxScheduler_pollEvents,

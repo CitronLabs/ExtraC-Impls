@@ -1,12 +1,14 @@
 #pragma once
-#define __XC_IMPL_COMMON_DEVICES__
+#define __ENV_COMMON_DEVICES__
 #include "pkg.h"
 
-#define package Common_Devices
+#define package env_Common_Devices
 
 
 typefrom(uword, ID);
-typefrom(std_Object, Data);
+typefrom(uword, Resource_ID);
+typefrom(uword, Stream_ID);
+typefrom(uword, Register_ID);
 
 type(Info,
 	const c8
@@ -15,23 +17,36 @@ type(Info,
      	* productName,
      	* serialCode,
      	* devPath;
+
+     	len_t 
+	    num_streams, 
+	    num_registers, 
+	    num_resources;
 )
 
-Data(User,
-INIT(strc8 name, path; void* additionalData),
-FMT(),
-     	Common_Devices_Info info;
-	void* userInfo; 
-);
 
-Interface(Stream,
-	errvt fn(open)();
+Interface(Resource,
+	errvt fn(onInit)(env_Common_Devices_ID device);
+	errvt fn(onExit)(env_Common_Devices_ID device);
 
+	union {
+	    struct {
+		errvt fn(open)();
+		errvt fn(writeTo)();
+		errvt fn(readFrom)();
+		errvt fn(close)();
+	    } Stream;
+	    struct {
+		errvt fn(open)();
+		errvt fn(writeTo)();
+		errvt fn(readFrom)();
+		errvt fn(close)();
+	    } Register;
+	} interface;
 )
 
-Interface(Register,
+typedef ifob(env_Common_Devices_Resource) env_Common_Devices_ResourceData;
+asXCType(env_Common_Devices_ResourceData);
 
-
-)
 
 #undef package

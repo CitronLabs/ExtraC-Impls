@@ -1,17 +1,17 @@
 #pragma once
-#define __LINUX__
+#define __ENV_LINUX__
 #include "../pkg.h"
 
 
 
-#ifndef __LINUX_OS__
+#ifndef __ENV_LINUX_OS__
 	#include "FS/pkg.h"
 	#include "Memory/pkg.h"
 
-	#define package lin
+	#define package env_Linux
 
 	Interface(OS,
-		interface(lin_Memory) Mem;
+		interface(env_Linux_OS_Memory) Mem;
 
 	)
 

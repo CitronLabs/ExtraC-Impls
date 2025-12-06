@@ -1,14 +1,19 @@
 #pragma once
-#define __LINUX__
+#define __ENV_LINUX__
 #include "../pkg.h"
 
 
 
 #ifndef __LINUX_RUNTIME__
-#define package lin
+#define package env_Linux
 
 Interface(Runtime,
-	
+  submodule(Devices,
+	env_Common_DevicesManager*      fn(getManager)();	
+	env_Common_Devices_ID    	fn(getIO)();	
+	env_Common_Devices_ID    	fn(getLocal)();	
+	env_Common_Devices_ID    	fn(getSys)();	
+  )
 
 )
 

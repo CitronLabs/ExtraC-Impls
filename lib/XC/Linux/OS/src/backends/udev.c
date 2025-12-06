@@ -10,7 +10,7 @@ typedef struct udev_list_entry UDListEnt;
 
 //shortening the function names for readability
 Static(Udev,
-       	namespace(monitor,
+       	submodule(monitor,
 		int vmethod(addFilterSubsystem,	  	UDMonitor* udev_monitor, const char * subsystem, const char * devtype);
 		int vmethod(enable, 			UDMonitor* udev_monitor);
 		int vmethod(getFD,  			UDMonitor* udev_monitor);
@@ -18,7 +18,7 @@ Static(Udev,
 		UDMonitor* vmethod(destroy, 		UDMonitor* udev_monitor);
 		UDMonitor* vmethod(newfromNetLink,	struct udev *udev, const char *name);
 	);
-       	namespace(device,
+       	submodule(device,
 		const char* vmethod(getAction,    	UDDevice* device);
 		const char* vmethod(getDevnode,   	UDDevice* device);  
 		const char* vmethod(getDevpath,   	UDDevice* device);  
@@ -29,14 +29,14 @@ Static(Udev,
 		UDDevice*   vmethod(destroy, 	  	UDDevice* udev_device);
 		UDDevice *  vmethod(newFromSysPath, 	struct udev* udev, const char* path);
 	);
-	namespace(enumerate,
+	submodule(enumerate,
 		int 	     vmethod(addFilterSubsystem,UDEnum* udev_enumerate, const char * subsystem);
 		UDEnum*      vmethod(makeNew);
 		int          vmethod(scanDevices,    	struct udev_enumerate* udenum);
 		UDListEnt*   vmethod(getList, 		struct udev_enumerate* udenum);
 		UDEnum*      vmethod(destroy,    	UDEnum* udev_enum);
 	);
-	namespace(listent,
+	submodule(listent,
 		const char* vmethod(getName,   UDListEnt* ent);
 		const char* vmethod(getValue,  UDListEnt* ent);
 		UDListEnt*  vmethod(getNext,   UDListEnt* ent);

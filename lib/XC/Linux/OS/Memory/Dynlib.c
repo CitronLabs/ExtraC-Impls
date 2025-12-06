@@ -3,25 +3,26 @@
 #include <dlfcn.h>
 #include <sys/stat.h>
 
-#define __XC_ENV_LIB_XC_IMPLEM_LIBC__
-
 #include "../../pkg.h"
 
 import(std)
 
+from(env_Linux_OS,
+     use(Dynlib)
+)
 
-void* methodimpl(lin_Dynlib, findSymbol, strc8 symbol) {
-	nonull(self, return null);
+void* moduleMethod(Dynlib, findSymbol, strc8 symbol) {
+	nonull(self){ return nil; }
 
 	void* result = dlsym(priv.handle, symbol);
 	
-	if(result == null)
+	if(!result)
 		ERR(ERR_INVALID, "could not find symbol");
 
 return result;    
 }
 
-DESTROY(lin_Dynlib){
+DESTROY(Dynlib){
 	nonull(self, return OK);
 
 	if (dlclose(priv.handle) != 0) 
@@ -30,18 +31,21 @@ return OK;
 }
 
 
-construct(lin_Dynlib,
+construct(env_Linux_OS_Dynlib,
 FMT(), 
 DEF(), 
 ){
 	void* dynlib = dlopen(arg.path, RTLD_LAZY);
 
-	if(dynlib == NULL){
-	    struct stat temp;
-	    if(stat(arg.path, &temp) == -1)
-	    	ERR(ERR_INVALID, "invalid dynamic lib path");
+	if(!dynlib){
+	    struct stat temp = {0};
+
+	    if(stat(arg.path, &temp) == -1){
+	    	ERR(ERR_INVALID, "invalid dynamic lib path");}
 	    else
 		ERR(ERR_FAIL, "failed to load dynamic lib");
+	    
+	    return nil;
 	}
 
 return self;

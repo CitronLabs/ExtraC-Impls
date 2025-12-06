@@ -1,11 +1,19 @@
-#include "pkg.h"
+#include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stdio.h>
 #include <sys/stat.h>
+
+#include "pkg.h"
 
 import(std)
 
-int vmethodimpl(PosixIO, open, std_FSPath path, int flags){
+#undef read
+#undef write
+
+#define module XC, Common, Posix, IO
+
+int moduleFn(open)(std_FSPath path, int flags){
 	
 	int fd = -1;
 
@@ -24,8 +32,8 @@ int vmethodimpl(PosixIO, open, std_FSPath path, int flags){
 return fd;
 }
 
-errvt vmethodimpl(PosixIO, fs_search, std_FSPath path, std_FSEntry* entry){
-	nonull(path, return err);
+errvt moduleFn(search)(std_FSPath path, std_FSEntry* entry){
+	nonull(path, entry){ return err; }
 
 	struct stat statbuf;
 	if(stat(path, &statbuf) == -1){
@@ -34,14 +42,14 @@ errvt vmethodimpl(PosixIO, fs_search, std_FSPath path, std_FSEntry* entry){
 		}
 	}
 
-	if(entry == null) return OK;
+	if(entry == nil) return OK;
 
 	entry->type.is.dir = S_ISDIR(statbuf.st_mode);
 	
 	entry->time_created = statbuf.st_ctim.tv_sec;
 	entry->time_modified = statbuf.st_mtim.tv_sec;
 
-	u32 nameoffset = 0, pathlen = strnlen(path, 255);
+	u32 nameoffset = 0, pathlen = strnlen((char*)path, 255);
 	
 	loop(i, pathlen){
 	   if(path[pathlen - i] == '/'){
@@ -54,8 +62,9 @@ errvt vmethodimpl(PosixIO, fs_search, std_FSPath path, std_FSEntry* entry){
 return OK;
 }
 
-errvt vmethodimpl(PosixIO, fs_delete, fsPath path){
-	nonull(path, return err)	
+errvt moduleFn(delete)(std_FSPath path){
+	nonull(path){ return err; }
+
 	if(-1 == remove(path)){
 		switch (errno) {
 		
@@ -63,10 +72,11 @@ errvt vmethodimpl(PosixIO, fs_delete, fsPath path){
 	}
 return OK;
 }
-i64 vmethodimpl(PosixIO, read, storageHandle handle, void* buff, u64 size){
-	nonull(buff, return err)
+
+i64 moduleFn(read)(int handle, void* buff, u64 size){
+	nonull(buff){ return err; }
 	u64 bytesread = 0;
-	if(-1 == (bytesread = read(addrasval(handle), buff, size))){
+	if(-1 == (bytesread = read(handle, buff, size))){
 		switch (errno) {
 		
 		}	
@@ -78,18 +88,18 @@ return bytesread;
 
 
 
-i64 vmethodimpl(PosixIO, write, storageHandle handle, void* buff, u64 size){
-	nonull(buff, return err)
+i64 moduleFn(write)(int handle, void* buff, u64 size){
+	nonull(buff){ return err; }
 	u64 byteswritten = 0;
-	if(-1 == (byteswritten = write(addrasval(handle), buff, size))){
+	if(-1 == (byteswritten = write(handle, buff, size))){
 		switch (errno) {
 		
 		}	
 	}
 return byteswritten;
 }
-errvt vmethodimpl(PosixIO, fs_chdir, fsPath path){
-	nonull(path, return err)
+errvt moduleFn(chdir)(std_FSPath path){
+	nonull(path){ return err; }
 	if(-1 == chdir(path)){
 		switch (errno) {
 		
@@ -98,10 +108,10 @@ errvt vmethodimpl(PosixIO, fs_chdir, fsPath path){
 return OK;
 }
 
-errvt vmethodimpl(PosixIO, close, storageHandle handle){
-	if(handle == (storageHandle)0 || handle == (storageHandle)1 || handle == (storageHandle)2) 
+errvt moduleFn(close)(int handle){
+	if(handle == STDIN_FILENO || handle == STDOUT_FILENO || handle == STDERR_FILENO) 
 		return ERR(ERR_INVALID, "cannot close the stdout, stdin, or stderr");
-	if((close(addrasval(handle))) == -1){
+	if((close(handle)) == -1){
 		switch (errno) {
 		
 		}

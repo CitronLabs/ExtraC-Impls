@@ -25,20 +25,23 @@ SOFTWARE.
 
 #include <Core/pkg.h>
 
-#ifndef __XC_WINDOWS__
 
-#include "Lib/pkg.h"
-#include "Runtime/pkg.h"
+#ifndef __ENV__
+
+#include "Common/pkg.h"
+#include "Linux/pkg.h"
+#include "Windows/pkg.h"
 
 #define package env
 
-Interface(Windows,
-  values(Version, word,
-	MAJOR,
-	MINOR,
-	PATCH
-  )	
-);
+Module(env){
+
+	interface(env_Linux) 	Linux;
+	interface(env_Windows) 	Windows;
+	interface(env_Common) 	Common;
+  
+
+};
 
 #undef package
 

@@ -158,7 +158,7 @@ type(LinuxGraphics_Data,
      	    void* display;
      	}data;
 )
-errvt vmethodimpl(LinuxGraphics, initSystem){
+errvt moduleFn(LinuxGraphics, initSystem){
 	errvt errval = ERR_NONE;
 
 	iferr(LinuxGraphics_initDisplaySystem())
@@ -173,14 +173,14 @@ errvt vmethodimpl(LinuxGraphics, initSystem){
 
 return errval;
 }
-errvt vmethodimpl(LinuxGraphics, exitSystem){
+errvt moduleFn(LinuxGraphics, exitSystem){
 	errvt errval = ERR_NONE;
 
 	iferr(LinuxGraphics_exitDisplaySystem())
 		return err;
 return OK;
 }
-graphicsHandle vmethodimpl(LinuxGraphics, grabDeviceAnyDirection, graphicsDevice* device){
+graphicsHandle moduleFn(LinuxGraphics, grabDeviceAnyDirection, graphicsDevice* device){
 	
 	LinuxGraphics_Data* result = new(LinuxGraphics_Data, .in_out = device->direction);
 
@@ -219,7 +219,7 @@ graphicsHandle vmethodimpl(LinuxGraphics, grabDeviceAnyDirection, graphicsDevice
 	if (ioctl(result->data.video.fd, VIDIOC_S_FMT, &fmt) == -1) {
 		ERR(ERR_FAIL, "VIDIOC_S_FMT failed");
 		free(result);
-		return null;
+		return nil;
 	}
 
 	video->buffers = new(Pool, 
@@ -238,7 +238,7 @@ graphicsHandle vmethodimpl(LinuxGraphics, grabDeviceAnyDirection, graphicsDevice
 		ERR(ERR_FAIL, "VIDIOC_S_FMT failed");
 		del(video->buffers)
 		free(result);
-		return null;
+		return nil;
 	}
 	
 	video->frames 	  = newList(VideoFrame, 10);	
@@ -259,7 +259,7 @@ graphicsHandle vmethodimpl(LinuxGraphics, grabDeviceAnyDirection, graphicsDevice
 			del(video->frames)
 			del(video->freeFrames)
 			free(result);
-			return null;
+			return nil;
 		}
 
 		buff->data = mmap(null, buff->info.length,
@@ -271,7 +271,7 @@ graphicsHandle vmethodimpl(LinuxGraphics, grabDeviceAnyDirection, graphicsDevice
 			del(video->frames)
 			del(video->freeFrames)
 			free(result);
-			return null;
+			return nil;
 		}
 
 		if (ioctl(result->data.video.fd, VIDIOC_QBUF, &buff->info) == -1) {
@@ -280,7 +280,7 @@ graphicsHandle vmethodimpl(LinuxGraphics, grabDeviceAnyDirection, graphicsDevice
 			del(video->frames)
 			del(video->freeFrames)
 			del(result);
-			return null;
+			return nil;
 		}
 
 		List.Append(video->frames, &buff, 1);
@@ -289,8 +289,8 @@ graphicsHandle vmethodimpl(LinuxGraphics, grabDeviceAnyDirection, graphicsDevice
 
 return result;
 }
-errvt vmethodimpl(LinuxGraphics, startVideo, graphicsHandle handle){
-	nonull(handle, return err);
+errvt moduleFn(LinuxGraphics, startVideo, graphicsHandle handle){
+	nonull(handle){ return err; }
 	LinuxGraphics_Data* vdHandle = handle;
 
 	if (ioctl(vdHandle->data.video.fd, VIDIOC_STREAMON, &(u32){V4L2_BUF_TYPE_VIDEO_CAPTURE}) == -1) 
@@ -298,8 +298,8 @@ errvt vmethodimpl(LinuxGraphics, startVideo, graphicsHandle handle){
 	
 return OK;
 }
-errvt vmethodimpl(LinuxGraphics, stopVideo, graphicsHandle handle){
-	nonull(handle, return err);
+errvt moduleFn(LinuxGraphics, stopVideo, graphicsHandle handle){
+	nonull(handle){ return err; }
 	LinuxGraphics_Data* vdHandle = handle;
 
 	if (ioctl(vdHandle->data.video.fd, VIDIOC_STREAMOFF, &(u32){V4L2_BUF_TYPE_VIDEO_CAPTURE}) == -1) 
@@ -307,8 +307,8 @@ errvt vmethodimpl(LinuxGraphics, stopVideo, graphicsHandle handle){
 	
 return OK;
 }
-errvt vmethodimpl(LinuxGraphics, closeVideo, graphicsHandle handle){
-	nonull(handle, return err);
+errvt moduleFn(LinuxGraphics, closeVideo, graphicsHandle handle){
+	nonull(handle){ return err; }
 	LinuxGraphics_Data* vdHandle = handle;
 	
 	if(vdHandle->in_out != VIDEO_IN)
@@ -324,7 +324,7 @@ errvt vmethodimpl(LinuxGraphics, closeVideo, graphicsHandle handle){
 	del(vdHandle);
 return OK;
 }
-errvt vmethodimpl(LinuxGraphics, pullVideoFrame, graphicsHandle handle, VideoFrame* frame){
+errvt moduleFn(LinuxGraphics, pullVideoFrame, graphicsHandle handle, VideoFrame* frame){
 	nonull(handle, return null);
 	nonull(frame, return null);
 
@@ -359,7 +359,7 @@ errvt vmethodimpl(LinuxGraphics, pullVideoFrame, graphicsHandle handle, VideoFra
 return OK;
 }
 
-errvt vmethodimpl(LinuxGraphics, pushVideoFrame, graphicsHandle handle, VideoFrame* frame){
+errvt moduleFn(LinuxGraphics, pushVideoFrame, graphicsHandle handle, VideoFrame* frame){
 	nonull(handle, return null);
 	LinuxGraphics_Data* gfx = handle;
 	
@@ -377,23 +377,23 @@ errvt vmethodimpl(LinuxGraphics, pushVideoFrame, graphicsHandle handle, VideoFra
 
 return OK;
 }
-errvt vmethodimpl(LinuxGraphics, handleEvents, graphicsHandle handle, Queue(OSEvents) evntQueue){
-	nonull(handle, return err);
+errvt moduleFn(LinuxGraphics, handleEvents, graphicsHandle handle, Queue(OSEvents) evntQueue){
+	nonull(handle){ return err; }
 	LinuxGraphics_Data* gfx = handle;
 
 	List.Append(gfx->evntQueues, &evntQueue, 1);
 
 return OK;
 }
-u64 vmethodimpl(LinuxGraphics, pollVideoEvents){
+u64 moduleFn(LinuxGraphics, pollVideoEvents){
 	run(VideoEvents);
 return VideoEvents.ports.numEvents;
 }
-u64 vmethodimpl(LinuxGraphics, pollDisplayEvents){
+u64 moduleFn(LinuxGraphics, pollDisplayEvents){
 	run(DisplayEvents);
 return DisplayEvents.ports.numEvents;
 }
-u64 vmethodimpl(LinuxGraphics, pollEvents){
+u64 moduleFn(LinuxGraphics, pollEvents){
 return LinuxGraphics_pollVideoEvents() + LinuxGraphics_pollDisplayEvents();
 }
 

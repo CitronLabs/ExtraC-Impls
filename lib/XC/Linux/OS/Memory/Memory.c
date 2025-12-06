@@ -5,16 +5,20 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#define __XC_ENV_LIB_XC_IMPLEM_LIBC__
-
-#include "../../pkg.h"
+#include "../../../pkg.h"
 
 import(std)
 import(XC)
-import(Linux)
+import(env)
 
-errvt methodimpl(lin_Memory, open, std_FSPath memObjPath){
-	nonull(memObjPath, return err);
+from(env_Linux_OS,
+	use(Memory)
+)
+
+#define module env, Linux, OS, Memory
+
+errvt moduleMethod(Memory, open, std_FSPath memObjPath){
+	nonull(memObjPath){ return err; }
 
 	priv.fd = shm_open(memObjPath, O_RDWR, 0666);
 	
@@ -24,14 +28,14 @@ errvt methodimpl(lin_Memory, open, std_FSPath memObjPath){
 return OK;
 }
 
-errvt methodimpl(lin_Memory, setProt, u16 flags){
-	nonull(self, return err);
+errvt moduleMethod(Memory, setProt, u16 flags){
+	nonull(self){ return err; }
 
 	int prot = 0;
 
-	if (flags & Linux.OS.Mem.Flag.READ)    { prot |= PROT_READ;  }
-	if (flags & Linux.OS.Mem.Flag.WRITE)   { prot |= PROT_WRITE; }
-	if (flags & Linux.OS.Mem.Flag.EXECUTE) { prot |= PROT_EXEC;  }
+	if (flags & env.Linux.OS.Mem.Flag.READ)    { prot |= PROT_READ;  }
+	if (flags & env.Linux.OS.Mem.Flag.WRITE)   { prot |= PROT_WRITE; }
+	if (flags & env.Linux.OS.Mem.Flag.EXECUTE) { prot |= PROT_EXEC;  }
 
 	if(this.address){
 	    if(mprotect(this.address, priv.size, priv.prot) == -1)
@@ -43,10 +47,10 @@ errvt methodimpl(lin_Memory, setProt, u16 flags){
 return OK;
 }
 
-errvt methodimpl(lin_Memory, setSwappable, bool swappable){
-	nonull(self, return err);
+errvt moduleMethod(Memory, setSwappable, bool swappable){
+	nonull(self){ return err; }
 	
-	if(!this.address)
+	if(this.address == nil)
 		return ERR(ERR_INVALID, "memory not committed yet");
 
 	if(swappable){
@@ -60,8 +64,8 @@ errvt methodimpl(lin_Memory, setSwappable, bool swappable){
 return OK;
 }
 
-errvt methodimpl(lin_Memory, commit){
-	nonull(self, return err);
+errvt moduleMethod(Memory, commit){
+	nonull(self){ return err; }
 	
 	this.address = mmap(
 		this.address,
@@ -72,15 +76,15 @@ errvt methodimpl(lin_Memory, commit){
 	);
 
 	if (this.address == MAP_FAILED) {
-		this.address = null;
+		this.address = nil;
 	    	return ERR(ERR_FAIL, "failed to map memory");
 	}
 
 return OK;
 }
 
-DESTROY(lin_Memory){
-	nonull(self, return err);
+DESTROY(Memory){
+	nonull(self){ return err; }
 
 	if(this.address)
 	    if (munmap(this.address, priv.size) == -1) 
@@ -89,14 +93,15 @@ DESTROY(lin_Memory){
 return OK;
 }
 
-SIZE(lin_Memory){
+SIZE(Memory){
 	nonull(self, return 0);
 return elements ? priv.size : priv.size & XC.Mem.getPageSize();
 }
 
-SET(lin_Memory){
-	nonull(self, return err);
-	Linux.OS.Mem.setProt(self, *(u16*)value);
+SET(Memory){
+	nonull(self){ return err; }
+
+return env.Linux.OS.Mem.setProt(self, *(u16*)value);
 }
 
 enum {
@@ -107,20 +112,20 @@ enum {
 	MEM_COMMIT	= (1 << 4),
 };
 
-construct(lin_Memory,
+construct(env_Linux_OS_Memory,
 FMT(),
 DEF(
 .size = 1, 
 .flags = MEM_READ | MEM_WRITE
 ),
-	.Create = lin_Memory_Op_Create,
-	.Destroy = lin_Memory_Op_Destroy,
-	.Set = lin_Memory_Op_Set,
-	.Size = lin_Memory_Op_Size
+	.Create  = env_Linux_OS_Memory_Op_Create,
+	.Destroy = env_Linux_OS_Memory_Op_Destroy,
+	.Set 	 = env_Linux_OS_Memory_Op_Set,
+	.Size 	 = env_Linux_OS_Memory_Op_Size
 ){
-	if (arg.flags & Linux.OS.Mem.Flag.READ)    { priv.prot |= PROT_READ;  }
-	if (arg.flags & Linux.OS.Mem.Flag.WRITE)   { priv.prot |= PROT_WRITE; }
-	if (arg.flags & Linux.OS.Mem.Flag.EXECUTE) { priv.prot |= PROT_EXEC;  }
+	if (arg.flags & env.Linux.OS.Mem.Flag.READ)    { priv.prot |= PROT_READ;  }
+	if (arg.flags & env.Linux.OS.Mem.Flag.WRITE)   { priv.prot |= PROT_WRITE; }
+	if (arg.flags & env.Linux.OS.Mem.Flag.EXECUTE) { priv.prot |= PROT_EXEC;  }
 
 	priv.size = size / XC.Mem.getPageSize();
 	
@@ -128,8 +133,8 @@ DEF(
 		priv.size++;
 	}
 
-	if(getbitflag(arg.flags, Linux.OS.Mem.Flag.SHARE)){
-		nonull(arg.atAddress, return nil);
+	if(getbitflag(arg.flags, env.Linux.OS.Mem.Flag.SHARE)){
+		nonull(arg.atAddress){ return nil; }
 		
 		priv.memFlags = MAP_SHARED;
 
@@ -137,7 +142,7 @@ DEF(
 
 		if(priv.fd == -1){
 			ERR(ERR_FAIL, "failed to create shared memory");
-			return null;
+			return nil;
 		}
 
 		ftruncate(priv.fd, priv.size);
@@ -153,9 +158,9 @@ DEF(
 		priv.fd = -1;
 	}
 	
-	if(getbitflag(arg.flags, Linux.OS.Mem.Flag.COMMIT)){
+	if(getbitflag(arg.flags, env.Linux.OS.Mem.Flag.COMMIT)){
 		this.address = mmap(
-			getbitflag(arg.flags, Linux.OS.Mem.Flag.SHARE) ? null : arg.atAddress,
+			getbitflag(arg.flags, env.Linux.OS.Mem.Flag.SHARE) ? NULL : arg.atAddress,
 			arg.size,
 			priv.prot,
 			priv.memFlags,
@@ -163,9 +168,9 @@ DEF(
 		);
 
 		if (this.address == MAP_FAILED) 
-			this.address = null;
+			this.address = nil;
 		    	ERR(ERR_FAIL, "failed to map memory");
 	}
 
-return OK;
+return self;
 }

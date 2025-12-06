@@ -1,43 +1,72 @@
 #pragma once
-#define __XC_IMPL_COMMON__
+#define __ENV_COMMON__
 #include "../pkg.h"
 
-#ifndef __XC_IMPL_COMMON_DEVICES__
+#ifndef __ENV_COMMON_DEVICES__
 
 #include "types.h"
 
-#define package Common
+#define package env_Common
 
-Class(Devices,
+Interface(Device,
+	
+
+)
+
+
+
+Class(DevicesManager,
 INIT(),
 FMT(),
 
 
 private(
-	std_ArrayList  registeredDevices;
-	std_ArrayStack freedDevices;
+	std_List  	registeredDevices;
+      	std_Map 	pathResolve;
 
 )
 ){
-	Common_Devices_Data*	method(Devices, getOne, 	Common_Devices_ID id);
-	errvt 	  		method(Devices, getAll, 	std_ArrayBuffer* envDevices);
-	Common_Devices_ID 	method(Devices, add,    	
-			   		Common_Devices_Data* data, 
-			   		Array(ifob(Common_Devices_Stream)) streams,
-			   		Array(ifob(Common_Devices_Register)) registers
-			   	);
+	ifob(env_Common_Device)* method(DevicesManager, getOne, 	env_Common_Devices_ID id);
+	errvt 	  		 method(DevicesManager, getAll, 	std_Array_Buffer* envDevices);
+	env_Common_Devices_ID 	 method(DevicesManager, add,   		ifob(env_Common_Device) data);
 
-	Common_Devices_ID 	method(Devices, find, 		strc8 path);
-	errvt 	  		method(Devices, remove, 	Common_Devices_ID id);
-	bool 	  		method(Devices, isConnected, 	Common_Devices_ID id);
-	errvt 	  		method(Devices, disconnect, 	Common_Devices_ID id);
-	errvt 	  		method(Devices, grab, 		Common_Devices_ID id);
-	errvt 	  		method(Devices, release, 	Common_Devices_ID id);
+	env_Common_Devices_ID 	 method(DevicesManager, find, 		strc8 path);
+	errvt 	  		 method(DevicesManager, remove, 	env_Common_Devices_ID id);
+	bool 	  		 method(DevicesManager, isConnected, 	env_Common_Devices_ID id);
+	errvt 	  		 method(DevicesManager, disconnect, 	env_Common_Devices_ID id);
+	errvt 	  		 method(DevicesManager, grab, 		env_Common_Devices_ID id);
+	errvt 	  		 method(DevicesManager, release, 	env_Common_Devices_ID id);
 
-	errvt 			method(Devices, addStreams,   	Common_Devices_ID id, Array(ifob(Common_Devices_Stream)) streams);
-	errvt 			method(Devices, addRegisters,   Common_Devices_ID id, Array(ifob(Common_Devices_Register)) registers);
+	submodule(Resource,
+	   	values(Type, word,
+	    		GENERIC,
+			STREAM,
+	    		REGISTER
+	    	);
+
+		env_Common_Devices_Resource_ID 
+	  		method(DevicesManager, add,  	
+				env_Common_Devices_ID id, word type,
+				env_Common_Devices_ResourceData resource
+		  	);
+
+		intf(env_Common_Devices_Resource)
+	  		method(DevicesManager, getInterface,  	
+				env_Common_Devices_ID id, 
+				env_Common_Devices_Resource_ID resource
+		  	);
+
+		errvt	method(DevicesManager, remove,
+				env_Common_Devices_ID id, 
+				env_Common_Devices_Resource_ID resource
+			);
+	)
       	
 };
+
+#undef package
+#define package env_Common_Devices
+
 
 #undef package
 #endif
