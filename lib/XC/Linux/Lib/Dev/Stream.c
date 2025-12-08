@@ -46,7 +46,7 @@ enum{
 	);
 
 #else
-#include "../../pkg.h"
+#include "../../../pkg.h"
 
 import(env)
 import(XC)

@@ -36,7 +36,7 @@ enum{
 	export(Attrib, ID, Stream, open, fetch, stdHandle);
 
 #else
-#include "../../pkg.h"
+#include "../../../pkg.h"
 
 import(env)
 import(XC)
