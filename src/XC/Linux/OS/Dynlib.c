@@ -3,9 +3,7 @@
 #include <dlfcn.h>
 #include <sys/stat.h>
 
-#include "../../pkg.h"
-
-import(std)
+#include <XC/pkg.c>
 
 from(env_Linux_OS,
      use(Dynlib)
@@ -17,16 +15,16 @@ void* moduleMethod(Dynlib, findSymbol, strc8 symbol) {
 	void* result = dlsym(priv.handle, symbol);
 	
 	if(!result)
-		ERR(ERR_INVALID, "could not find symbol");
+		ERR(ERR.INVALID, "could not find symbol");
 
 return result;    
 }
 
 DESTROY(Dynlib){
-	nonull(self, return OK);
+	nonull(self){ return err; }
 
 	if (dlclose(priv.handle) != 0) 
-		return ERR(ERR_FAIL, "failed to close dynamic library");
+		return ERR(ERR.FAIL, "failed to close dynamic library");
 return OK;
 }
 
@@ -41,9 +39,9 @@ DEF(),
 	    struct stat temp = {0};
 
 	    if(stat(arg.path, &temp) == -1){
-	    	ERR(ERR_INVALID, "invalid dynamic lib path");}
+	    	ERR(ERR.INVALID, "invalid dynamic lib path");}
 	    else
-		ERR(ERR_FAIL, "failed to load dynamic lib");
+		ERR(ERR.FAIL, "failed to load dynamic lib");
 	    
 	    return nil;
 	}

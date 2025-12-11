@@ -1,15 +1,14 @@
+#define _POSIX_C_SOURCE 200112L
+
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "../../../pkg.h"
-
-import(std)
-import(XC)
-import(env)
+#include <XC/pkg.c>
 
 from(env_Linux_OS,
 	use(Memory)
@@ -23,7 +22,7 @@ errvt moduleMethod(Memory, open, std_FSPath memObjPath){
 	priv.fd = shm_open(memObjPath, O_RDWR, 0666);
 	
 	if(priv.fd == -1)
-		return ERR(ERR_FAIL, "failed to open memory object");
+		return ERR(ERR.FAIL, "failed to open memory object");
 
 return OK;
 }
@@ -39,7 +38,7 @@ errvt moduleMethod(Memory, setProt, u16 flags){
 
 	if(this.address){
 	    if(mprotect(this.address, priv.size, priv.prot) == -1)
-		return ERR(ERR_FAIL, "failed to set memory");
+		return ERR(ERR.FAIL, "failed to set memory");
 	}
 
 	priv.prot = prot;
@@ -51,14 +50,14 @@ errvt moduleMethod(Memory, setSwappable, bool swappable){
 	nonull(self){ return err; }
 	
 	if(this.address == nil)
-		return ERR(ERR_INVALID, "memory not committed yet");
+		return ERR(ERR.INVALID, "memory not committed yet");
 
 	if(swappable){
 		if(munlock(this.address, priv.size) == -1)
-			return ERR(ERR_FAIL, "failed to set memory to swappable");
+			return ERR(ERR.FAIL, "failed to set memory to swappable");
 	}else{ 
 		if(mlock(this.address, priv.size) == -1)
-			return ERR(ERR_FAIL, "failed to unset memory to swappable");
+			return ERR(ERR.FAIL, "failed to unset memory to swappable");
 	}
 	
 return OK;
@@ -77,7 +76,7 @@ errvt moduleMethod(Memory, commit){
 
 	if (this.address == MAP_FAILED) {
 		this.address = nil;
-	    	return ERR(ERR_FAIL, "failed to map memory");
+	    	return ERR(ERR.FAIL, "failed to map memory");
 	}
 
 return OK;
@@ -88,13 +87,13 @@ DESTROY(Memory){
 
 	if(this.address)
 	    if (munmap(this.address, priv.size) == -1) 
-	    	return ERR(ERR_FAIL, "failed to unmap memory");
+	    	return ERR(ERR.FAIL, "failed to unmap memory");
 
 return OK;
 }
 
 SIZE(Memory){
-	nonull(self, return 0);
+	nonull(self){ return 0; }
 return elements ? priv.size : priv.size & XC.Mem.getPageSize();
 }
 
@@ -104,19 +103,11 @@ SET(Memory){
 return env.Linux.OS.Mem.setProt(self, *(u16*)value);
 }
 
-enum {
-	MEM_READ 	= (1 << 0),
-	MEM_WRITE	= (1 << 1),
-	MEM_EXECUTE	= (1 << 2),
-	MEM_SHARED	= (1 << 3),
-	MEM_COMMIT	= (1 << 4),
-};
-
 construct(env_Linux_OS_Memory,
 FMT(),
 DEF(
 .size = 1, 
-.flags = MEM_READ | MEM_WRITE
+.flags = XC_Mem_Perms_READ | XC_Mem_Perms_WRITE
 ),
 	.Create  = env_Linux_OS_Memory_Op_Create,
 	.Destroy = env_Linux_OS_Memory_Op_Destroy,
@@ -141,10 +132,10 @@ DEF(
 		priv.fd = shm_open(arg.atAddress, O_CREAT | O_RDWR, 0666);
 
 		if(priv.fd == -1){
-			ERR(ERR_FAIL, "failed to create shared memory");
+			ERR(ERR.FAIL, "failed to create shared memory");
 			return nil;
 		}
-
+	
 		ftruncate(priv.fd, priv.size);
 	}else{
 		priv.memFlags = MAP_PRIVATE | MAP_ANONYMOUS;
@@ -169,7 +160,7 @@ DEF(
 
 		if (this.address == MAP_FAILED) 
 			this.address = nil;
-		    	ERR(ERR_FAIL, "failed to map memory");
+		    	ERR(ERR.FAIL, "failed to map memory");
 	}
 
 return self;

@@ -1,5 +1,4 @@
 #pragma once
-#define std std_UNIX
 #include <errno.h>
 #include <stdarg.h>
 #include <unistd.h>
@@ -9,14 +8,6 @@
 #include <XC/pkg.c>
 
 #define module XC, Mem
-
-moduleValues(Perms,
-      	READ  , (1 << 0),
-      	WRITE , (1 << 1),
-      	EXEC  , (1 << 2),
-);
-
-importFn(alloc, getPageSize, dealloc, protect)
 
 from(env_Linux_OS, 
      use(Memory)
@@ -30,7 +21,7 @@ void* moduleFn(alloc)(len_t num_pages){
 	);
 	
 	if(mem.address == nil){
-		ERR(ERR_FAIL, "failed to allocate memory");
+		ERR(ERR.FAIL, "failed to allocate memory");
 		return nil;
 	}
 
@@ -89,4 +80,3 @@ errvt moduleFn(protect)(
 return env.Linux.OS.Mem.setProt(&mem, mem.__private.prot);
 }
 
-#undef module

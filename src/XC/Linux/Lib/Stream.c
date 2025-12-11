@@ -1,13 +1,7 @@
 #pragma once
-#include <Core/pkg.c>
-#include "../../../pkg.h"
-#include "../../../pkg.c"
+#include <XC/pkg.c>
 
 #define module XC, Dev, Stream
-
-import(env)
-import(XC)
-import(std)
 
 from(env_Common,
 	Devices_ID 		as devID,
@@ -20,20 +14,6 @@ alias(env.Linux.Runtime.Devices,   Devices);
 alias(env.Common.Devices.Resource, Resource);
 alias(XC.Dev.Stream.Attrib,        Attribs);
 
-moduleValues(ID,
-	In  as 0,
-	Out as 1,
-	Err as 2,
-);
-
-moduleValues(Attrib,
-      	READ  as (1 << 0), 
-      	WRITE as (1 << 1),
-      	DIR   as (1 << 2),  
-        LINK  as (1 << 3),
-);
-
-
 StreamResource openIOStream(const char* key, word attributes, bool create){
 	
 	StreamResource stream = {0};
@@ -41,9 +21,9 @@ StreamResource openIOStream(const char* key, word attributes, bool create){
 	if(getbitflag(attributes, Attribs.DIR)){
 	    stream.interface = &env.Common.Posix.IO.Dir.Stream;
 
-	    stream.object 	= new(Dir,
-	    	.path   = key,
-	    	.flags  = {
+	    stream.object = new(Dir,
+	    	.path     = key,
+	    	.flags    = {
 	    	    .create = create,
 	    	    .read   = getbitflag(attributes, Attribs.READ),
 	    	    .write  = getbitflag(attributes, Attribs.WRITE),
@@ -67,7 +47,6 @@ StreamResource openIOStream(const char* key, word attributes, bool create){
 return stream;
 }
 
-
 streamHandle moduleFn(open)(
 	devHandle dev, 
 	const char* key, 
@@ -78,11 +57,11 @@ streamHandle moduleFn(open)(
 
 	StreamResource stream;
 
-	if(pntr_asVal(dev) == Devices->getIO())
+	if(pntr_asVal(dev) == Devices.getIO())
 		stream = openIOStream(key, attributes, true);
 	
 	if(stream.object == nil){
-		ERR(ERR_FAIL, "failed to create stream object");
+		ERR(ERR.FAIL, "failed to create stream object");
 		return nil;
 	}
 
@@ -110,8 +89,8 @@ streamHandle moduleFn(fetch)(
 		stream = openIOStream(key, attributes, false);
 	
 	if(stream.object == nil){
-		if(errnm != ERR_INVALID)
-			ERR(ERR_FAIL, "failed to fetch stream object");
+		if(errnm != ERR.INVALID)
+			ERR(ERR.FAIL, "failed to fetch stream object");
 
 		return nil;
 	}

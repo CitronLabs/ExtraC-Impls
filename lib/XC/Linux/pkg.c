@@ -1,7 +1,7 @@
 #pragma once
 
 #include <XC/pkg.h>
-#include <Core/pkg.h>
+#include <Core/pkg.c>
 
 #include "OS/pkg.c"
 #include "Runtime/pkg.c"
@@ -18,10 +18,11 @@ moduleValues(Version,
 )
 
 export(
-SUBMODULE(OS),
+SUBMODULE(),
 VALUES(Version), 
-);
+)
 
+#undef module
 
 #undef module
 

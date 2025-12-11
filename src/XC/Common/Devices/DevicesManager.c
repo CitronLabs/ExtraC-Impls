@@ -1,27 +1,5 @@
+#include <XC/pkg.c>
 #define module env, Common, Devices
-#include "../../pkg.h"
-
-import(std)
-import(env)
-
-#ifdef __PKG
-	#include "Resource.c"	
-	
-	#undef module
-	#define module env, Common, Devices
-
-	importFn(
-		getOne, getAll, add, find, 
-		remove, isConnected, disconnect, 
-		grab, release
-	);
-
-	export(
-		Resource, getOne, getAll, add, find, 
-		remove, isConnected, disconnect, 
-		grab, release);
-
-#else                           	
 
 from(env_Common, 
     use(DevicesManager),
@@ -41,9 +19,10 @@ typedef struct {
 	ubyte isConnected : 1;
 	
 	ifob(env_Common_Device) data;
-	
-
 } Device;
+
+defTypeID(env_Common_Device_ID);
+defTypeID(env_Common_Device_Data);
 
 ifob(env_Common_Device)* moduleMethod(DevicesManager, getOne, devID id){
 	nonull(self){ return nil; }
@@ -52,7 +31,7 @@ ifob(env_Common_Device)* moduleMethod(DevicesManager, getOne, devID id){
 	Device* dev = index(&priv.registeredDevices, id);
 	
 	if(!dev){
-		ERR(ERR_FAIL, "failed to find device from the device ID");
+		ERR(ERR.FAIL, "failed to find device from the device ID");
 		return nil;
 	}
 
@@ -108,7 +87,7 @@ errvt moduleMethod(DevicesManager, disconnect, devID id){
 	Device* dev = index(&priv.registeredDevices, id);
 	
 	if(!dev)
-		return ERR(ERR_FAIL, "failed to find device from the device ID");
+		return ERR(ERR.FAIL, "failed to find device from the device ID");
 	
 	
 	dev->isConnected = false;
@@ -123,7 +102,7 @@ errvt moduleMethod(DevicesManager, grab, devID id){
 	Device* dev = index(&priv.registeredDevices, id);
 	
 	if(!dev)
-		return ERR(ERR_FAIL, "failed to find device from the device ID");
+		return ERR(ERR.FAIL, "failed to find device from the device ID");
 	
 	
 	dev->numReferences++;
@@ -136,7 +115,7 @@ errvt moduleMethod(DevicesManager, release, devID id){
 	Device* dev = index(&priv.registeredDevices, id);
 	
 	if(!dev)
-		return ERR(ERR_FAIL, "failed to find device from the device ID");
+		return ERR(ERR.FAIL, "failed to find device from the device ID");
 	
 	
 	dev->numReferences--;
@@ -153,16 +132,16 @@ errvt moduleMethod(DevicesManager, addResource,
 	Device* dev = index(&priv.registeredDevices, id);
 	
 	if(!dev)
-		return ERR(ERR_FAIL, "failed to find device from the device ID");
+		return ERR(ERR.FAIL, "failed to find device from the device ID");
 	
 	if(dev->resources.__type)
 		if(create(List, &dev->resources,
 			.type = cT(ifob(env_Common_Devices_Resource))
 	    	) == nil)
-			return ERR(ERR_INITFAIL, "failed to initalize device resources list");
+			return ERR(ERR.INIT, "failed to initalize device resources list");
 	
 	if(!write(&dev->resources, &resource)){
-		return ERR(ERR_FAIL, "failed to add resources to device");
+		return ERR(ERR.FAIL, "failed to add resources to device");
 	}
 
 return OK;
@@ -179,16 +158,16 @@ errvt moduleMethod(DevicesManager, removeResource,
 	Device* dev = index(&priv.registeredDevices, id);
 	
 	if(!dev)
-		return ERR(ERR_FAIL, "failed to find device from the device ID");
+		return ERR(ERR.FAIL, "failed to find device from the device ID");
 	
 	if(dev->resources.__type)
 		if(create(List, &dev->resources,
 			.type = cT(ifob(env_Common_Devices_Resource))
 	    	) == nil)
-			return ERR(ERR_INITFAIL, "failed to initalize device resources list");
+			return ERR(ERR.INIT, "failed to initalize device resources list");
 	
 	if(!write(&dev->resources, &resource)){
-		return ERR(ERR_FAIL, "failed to add resources to device");
+		return ERR(ERR.FAIL, "failed to add resources to device");
 	}
 
 return OK;
@@ -214,8 +193,4 @@ DEF(),
 return self;
 };
 
-defTypeID(env_Common_Device_ID);
-defTypeID(env_Common_Device_Data);
 
-#endif
-#undef module

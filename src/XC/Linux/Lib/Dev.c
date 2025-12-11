@@ -35,7 +35,7 @@ from(env_Common,
 )
 
 devHandle moduleFn(open)(const char* name, word attributes){
-ERR(ERR_NOTIMPLEM, 
+ERR(ERR.NOTIMPLEM, 
 	"This feature is not currently avalible in "
 	"this version of the Linux XC Implementation"
 );
@@ -43,7 +43,7 @@ ERR(ERR_NOTIMPLEM,
 return nil;
 }
 devHandle moduleFn(fetch)(const char* name){
-ERR(ERR_NOTIMPLEM, 
+ERR(ERR.NOTIMPLEM, 
 	"This feature is not currently avalible in "
 	"this version of the Linux XC Implementation"
 );
@@ -64,11 +64,9 @@ devHandle moduleFn(stdHandle)(word id){
 		return (devHandle)(len_t)env.Linux.Runtime.Devices.getSys();
 	break;}
 	default: {
-		ERR(ERR_INVALID, "invalid std device handle id");
+		ERR(ERR.INVALID, "invalid std device handle id");
 		return nil;
 	}
 	}
 }
 
-#endif
-#undef module

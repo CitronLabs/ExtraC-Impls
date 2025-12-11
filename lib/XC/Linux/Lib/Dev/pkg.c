@@ -1,5 +1,5 @@
 #pragma once
-#include <Core/pkg.h>
+#include <Core/pkg.c>
 #include <XC/pkg.h>
 
 /*--------------------------------------|
