@@ -1,2 +1,3 @@
+#pragma once
 #define __PKG
-#include "./DevicesManager.c"
+#include "./DevicesManager_pkg.c"

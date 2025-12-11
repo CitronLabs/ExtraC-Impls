@@ -1,91 +1,64 @@
-#define module XC, Dev, Stream
-#include <Core/pkg.h>
-
-enum{
-	XC_Dev_Stream_Attrib_READ  = (1 << 0),
-	XC_Dev_Stream_Attrib_WRITE = (1 << 1),
-	XC_Dev_Stream_Attrib_DIR   = (1 << 2),
-	XC_Dev_Stream_Attrib_LINK  = (1 << 3),
-};
-
-
-enum{
-	XC_Dev_Stream_ID_In  = 0,
-	XC_Dev_Stream_ID_Out = 1,
-	XC_Dev_Stream_ID_Err = 2,
-};
-
-#ifdef __PKG
-	import(XC)	
-
-	moduleValues(ID,
-		.In  = XC_Dev_Stream_ID_In,
-		.Out = XC_Dev_Stream_ID_Out,
-		.Err = XC_Dev_Stream_ID_Err
-	);
-
-	moduleValues(Attrib,
-	      	.READ  = XC_Dev_Stream_Attrib_READ, 
-	      	.WRITE = XC_Dev_Stream_Attrib_WRITE,
-	      	.DIR   = XC_Dev_Stream_Attrib_DIR,  
-	        .LINK  = XC_Dev_Stream_Attrib_LINK 
-	);
-
-	importFn(
-		writeTo, readFrom, open, 
-	  	fetch, modify, watch, isModified, 
-	  	close, drop, stdHandle, shift, info, 
-	  	control, flush, sync
-	)
-
-	export(Attrib, ID,
-		writeTo, readFrom, open, 
-	  	fetch, modify, watch, isModified, 
-	  	close, drop, stdHandle, shift, info, 
-	  	control, flush, sync
-	);
-
-#else
+#pragma once
+#include <Core/pkg.c>
 #include "../../../pkg.h"
+#include "../../../pkg.c"
+
+#define module XC, Dev, Stream
 
 import(env)
 import(XC)
 import(std)
 
 from(env_Common,
-	Devices_ID as devID,
-     	Devices_ResourceData as StreamResource
+	Devices_ID 		as devID,
+     	Devices_ResourceData 	as StreamResource,
+     	Posix_IO_Dir		as Dir,
+     	Posix_IO_File		as File
 );
 
-alias(env.Linux.Runtime.Devices, Devices);
+alias(env.Linux.Runtime.Devices,   Devices);
 alias(env.Common.Devices.Resource, Resource);
+alias(XC.Dev.Stream.Attrib,        Attribs);
+
+moduleValues(ID,
+	In  as 0,
+	Out as 1,
+	Err as 2,
+);
+
+moduleValues(Attrib,
+      	READ  as (1 << 0), 
+      	WRITE as (1 << 1),
+      	DIR   as (1 << 2),  
+        LINK  as (1 << 3),
+);
 
 
 StreamResource openIOStream(const char* key, word attributes, bool create){
 	
 	StreamResource stream = {0};
 
-	if(getbitflag(attributes, XC.Dev.Stream.Attrib.DIR)){
+	if(getbitflag(attributes, Attribs.DIR)){
 	    stream.interface = &env.Common.Posix.IO.Dir.Stream;
 
-	    stream.object 	= new(env_Common_Posix_IO_Dir,
+	    stream.object 	= new(Dir,
 	    	.path   = key,
 	    	.flags  = {
 	    	    .create = create,
-	    	    .read   = getbitflag(attributes, XC.Dev.Stream.Attrib.READ),
-	    	    .write  = getbitflag(attributes, XC.Dev.Stream.Attrib.WRITE),
+	    	    .read   = getbitflag(attributes, Attribs.READ),
+	    	    .write  = getbitflag(attributes, Attribs.WRITE),
 	    	 }
 	    );
 
 	} else {
 	    stream.interface = &env.Common.Posix.IO.File.Stream;
 
-	    stream.object 	= new(env_Common_Posix_IO_File,
+	    stream.object 	= new(File,
 	    	.path   = key,
 	    	.flags  = {
 	    	    .create = create,
-	    	    .read   = getbitflag(attributes, XC.Dev.Stream.Attrib.READ),
-	    	    .write  = getbitflag(attributes, XC.Dev.Stream.Attrib.WRITE),
+	    	    .read   = getbitflag(attributes, Attribs.READ),
+	    	    .write  = getbitflag(attributes, Attribs.WRITE),
 	    	 }
 	    );
 
@@ -101,7 +74,7 @@ streamHandle moduleFn(open)(
 	word attributes, 
 	streamSettings* settings
 ){
-	nonull(dev, key){ return NULL; }
+	nonull(dev, key){ return nil; }
 
 	StreamResource stream;
 
@@ -110,14 +83,14 @@ streamHandle moduleFn(open)(
 	
 	if(stream.object == nil){
 		ERR(ERR_FAIL, "failed to create stream object");
-		return NULL;
+		return nil;
 	}
 
 return (streamHandle)(len_t)
-	Resource->add(
-		Devices->getManager(),
+	Resource.add(
+		Devices.getManager(),
 		pntr_asVal(dev),
-		Resource->Type.STREAM,
+		Resource.Type.STREAM,
 		stream
 	);
 }
@@ -129,25 +102,25 @@ streamHandle moduleFn(fetch)(
 	word attributes, 
 	streamSettings* settings
 ){
-	nonull(dev, key){ return NULL; }
+	nonull(dev, key){ return nil; }
 
 	StreamResource stream;
 
-	if(pntr_asVal(dev) == Devices->getIO())
+	if(pntr_asVal(dev) == Devices.getIO())
 		stream = openIOStream(key, attributes, false);
 	
 	if(stream.object == nil){
 		if(errnm != ERR_INVALID)
 			ERR(ERR_FAIL, "failed to fetch stream object");
 
-		return NULL;
+		return nil;
 	}
 
 return (streamHandle)(len_t)
-	Resource->add(
-		Devices->getManager(),
+	Resource.add(
+		Devices.getManager(),
 		pntr_asVal(dev),
-		Resource->Type.STREAM,
+		Resource.Type.STREAM,
 		stream
 	);
 }
@@ -168,5 +141,3 @@ streamInfo moduleFn(info)(streamHandle handle);
 errvt moduleFn(control)(streamHandle handle, word command, void* args); // Generic IOCTL/FCNTL abstraction
 errvt moduleFn(flush)(streamHandle handle); // Forces pending writes to the underlying medium
 errvt moduleFn(sync)(streamHandle handle); // Ensures data and metadata are written (fsync)
-#endif
-#undef module

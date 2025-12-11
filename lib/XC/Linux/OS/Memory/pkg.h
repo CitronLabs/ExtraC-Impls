@@ -6,8 +6,6 @@
 
 #ifndef __ENV_LINUX_OS_MEMORY__
 	
-#include "types.h"
-
 #define package env_Linux_OS
 
 Class(Dynlib,
@@ -38,7 +36,6 @@ private(
 	)
 	errvt method(Memory, open, std_FSPath memObjPath);
 	errvt method(Memory, setProt, u16 flags);
-	errvt method(Memory, free);
 	errvt method(Memory, setSwappable, bool swappable);
 	errvt method(Memory, commit);
 

@@ -1,16 +1,19 @@
+#pragma once
+#include <Core/pkg.c>
+#include <XC/pkg.c>
+
 #define module XC, Dev
 
-enum{
-	XC_Dev_Attrib_PRIVATE = 0,
-	XC_Dev_Attrib_PUBLIC  = 1,
-};
+moduleValues(Attrib,
+	      	PRIVATE,,
+	      	PUBLIC,,
+	);
 
-
-enum{
-	XC_Dev_ID_IO,
-	XC_Dev_ID_Local,
-	XC_Dev_ID_Sys,
-};
+moduleValues(ID,
+     		IO,,
+	      	Local,,
+	      	Sys,,   
+	);
 
 #ifdef __PKG
 	#include "Stream.c"
@@ -18,29 +21,14 @@ enum{
 
 	#define module XC, Dev
 
-	import(XC)	
 
-	moduleValues(Attrib,
-	      	.PUBLIC  = XC_Dev_Attrib_PUBLIC,
-	      	.PRIVATE = XC_Dev_Attrib_PRIVATE
-	);
-
-	moduleValues(ID,
-	      	.IO    = XC_Dev_ID_IO,
-	      	.Local = XC_Dev_ID_Local,
-	      	.Sys   = XC_Dev_ID_Sys
-	);
 
 	importFn(open, fetch, stdHandle)
 
 	export(Attrib, ID, Stream, open, fetch, stdHandle);
 
 #else
-#include "../../../pkg.h"
 
-import(env)
-import(XC)
-import(std)
 
 from(env_Common,
 	Devices_ID as devID
@@ -52,7 +40,7 @@ ERR(ERR_NOTIMPLEM,
 	"this version of the Linux XC Implementation"
 );
 
-return NULL;
+return nil;
 }
 devHandle moduleFn(fetch)(const char* name){
 ERR(ERR_NOTIMPLEM, 
@@ -60,7 +48,7 @@ ERR(ERR_NOTIMPLEM,
 	"this version of the Linux XC Implementation"
 );
 
-return NULL;
+return nil;
 }
 
 devHandle moduleFn(stdHandle)(word id){
@@ -77,7 +65,7 @@ devHandle moduleFn(stdHandle)(word id){
 	break;}
 	default: {
 		ERR(ERR_INVALID, "invalid std device handle id");
-		return NULL;
+		return nil;
 	}
 	}
 }

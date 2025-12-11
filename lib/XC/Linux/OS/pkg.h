@@ -5,7 +5,6 @@
 
 
 #ifndef __ENV_LINUX_OS__
-	#include "FS/pkg.h"
 	#include "Memory/pkg.h"
 
 	#define package env_Linux

@@ -1,6 +1,5 @@
 #undef module
-#define module env, Common, Devices
-#include "../../pkg.h"
+#include <XC/pkg.c>
 
 import(std)
 import(env)
@@ -12,10 +11,6 @@ enum {
 };
 
 
-#define __PKG
-#ifdef __PKG
-	
-	#undef module
 	#define module env, Common, Devices, Resource
 
 	importFn(add, remove, getInterface);

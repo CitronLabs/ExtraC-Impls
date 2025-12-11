@@ -1,36 +1,22 @@
-#define module XC, Mem
-
-enum{
-	XC_Mem_Perms_READ  = (1 << 0),
-	XC_Mem_Perms_WRITE = (1 << 1),
-	XC_Mem_Perms_EXEC  = (1 << 2),
-};
-#ifdef __PKG
-	#include <Core/pkg.h>
-	import(XC)	
-
-	moduleValues(Perms,
-	      	.READ  = XC_Mem_Perms_READ,
-	      	.WRITE = XC_Mem_Perms_WRITE,
-	      	.EXEC  = XC_Mem_Perms_EXEC,
-	);
-
-	importFn(alloc, getPageSize, dealloc, protect)
-
-	export(Perms, alloc, getPageSize, dealloc, protect);
-
-#else
-
+#pragma once
+#define std std_UNIX
 #include <errno.h>
 #include <stdarg.h>
 #include <unistd.h>
+#undef std 
 
-#include "../../pkg.h"
+#include <Core/pkg.c>
+#include <XC/pkg.c>
 
-import(env)
-import(XC)
-import(std)
+#define module XC, Mem
 
+moduleValues(Perms,
+      	READ  , (1 << 0),
+      	WRITE , (1 << 1),
+      	EXEC  , (1 << 2),
+);
+
+importFn(alloc, getPageSize, dealloc, protect)
 
 from(env_Linux_OS, 
      use(Memory)
@@ -84,7 +70,12 @@ len_t moduleFn(getPageSize)(){
 return pageSize;
 }
 
-errvt moduleFn(protect)(void* ptr, len_t num_pages, word permissions){
+errvt moduleFn(protect)(
+	void* ptr, 
+	len_t num_pages, 
+	errvt fn(fault_callback)(void*, len_t), 
+	word permissions
+){
 	Memory mem = {
 		.address = ptr,
 		.userFlags = 0,
@@ -98,5 +89,4 @@ errvt moduleFn(protect)(void* ptr, len_t num_pages, word permissions){
 return env.Linux.OS.Mem.setProt(&mem, mem.__private.prot);
 }
 
-#endif
 #undef module
