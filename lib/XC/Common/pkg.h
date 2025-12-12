@@ -28,7 +28,6 @@ SOFTWARE.
 
 #ifndef __ENV_COMMON__
 
-#include "Assembly/pkg.h"
 #include "Devices/pkg.h"
 #include "Posix/pkg.h"
 
