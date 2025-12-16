@@ -1,30 +1,9 @@
-#include <XC/pkg.c>
+#include "DevicesManager.h"
 #define module env, Common, Devices
 
-from(env_Common, 
-    use(DevicesManager),
-    Devices_ID      	as devID,
-);
-
-from(std,
-	use(Map),
-	use(String),
-	use(List),
-);
 
 
-typedef struct {
-	List resources;
-	len_t numReferences;
-	ubyte isConnected : 1;
-	
-	ifob(env_Common_Device) data;
-} Device;
-
-defTypeID(env_Common_Device_ID);
-defTypeID(env_Common_Device_Data);
-
-ifob(env_Common_Device)* moduleMethod(DevicesManager, getOne, devID id){
+ifob(env_Common_Device)* moduleMethod(devManager, getOne, devID id){
 	nonull(self){ return nil; }
 	if(!id)	    { nullerr(id); return nil; }
 
@@ -38,7 +17,7 @@ ifob(env_Common_Device)* moduleMethod(DevicesManager, getOne, devID id){
 return generic &dev->data;
 }
 
-errvt moduleMethod(DevicesManager, getAll, std_Array_Buffer* envDevices){
+errvt moduleMethod(devManager, getAll, std_Array_Buffer* envDevices){
 	nonull(self, envDevices){ return err; }
 
 	foreach(&priv.registeredDevices, Device, dev)
@@ -47,7 +26,7 @@ errvt moduleMethod(DevicesManager, getAll, std_Array_Buffer* envDevices){
 return OK;
 }
 
-devID   moduleMethod(DevicesManager, add, ifob(env_Common_Device) data){
+devID moduleMethod(devManager, add, ifob(env_Common_Device) data){
 	
 	Device dev = {
 		.isConnected = true,
@@ -60,7 +39,7 @@ devID   moduleMethod(DevicesManager, add, ifob(env_Common_Device) data){
 return result;
 }
 
-devID moduleMethod(DevicesManager, find, strc8 path){
+devID moduleMethod(devManager, find, strc8 path){
 	nonull(path){ return -1; }
 
 	devID* result = std.Map.Search(
@@ -74,15 +53,29 @@ devID moduleMethod(DevicesManager, find, strc8 path){
 
 return *result;
 }
-errvt moduleMethod(DevicesManager, remove, devID id)
-	{ return std.List.SetFree(&priv.registeredDevices, id); }
+errvt moduleMethod(devManager, remove, devID id){ 
+	nonull(self){ return err; }
 
-bool  moduleMethod(DevicesManager, isConnected, devID id)
+	Device* dev = index(&priv.registeredDevices, id);
+	
+	if(!dev)
+		return ERR(ERR.FAIL, "failed to find device from the device ID");
+
+	if(dev->isConnected || dev->numReferences != 0){
+		return ERR(ERR.BUSY, "device is still in use");
+	}
+
+	foreach(&dev->resources, resourceData, resource){
+		i(resource).onExit(resource_iterator);
+	}
+
+}
+
+bool  moduleMethod(devManager, isConnected, devID id)
 	{ return ((Device*)index(&priv.registeredDevices, id))->isConnected;}
 
-errvt moduleMethod(DevicesManager, disconnect, devID id){
+errvt moduleMethod(devManager, disconnect, devID id){
 	nonull(self){ return err; }
-	if(!id)	    { return nullerr(id); }
 
 	Device* dev = index(&priv.registeredDevices, id);
 	
@@ -94,7 +87,7 @@ errvt moduleMethod(DevicesManager, disconnect, devID id){
 
 return OK;
 }
-errvt moduleMethod(DevicesManager, grab, devID id){
+errvt moduleMethod(devManager, grab, devID id){
 	nonull(self){ return err; }
 	if(!id)	    { return nullerr(id); }
 
@@ -108,7 +101,8 @@ errvt moduleMethod(DevicesManager, grab, devID id){
 	dev->numReferences++;
 return OK;
 }
-errvt moduleMethod(DevicesManager, release, devID id){
+
+errvt moduleMethod(devManager, release, devID id){
 	nonull(self){ return err; }
 	if(!id)	    { return nullerr(id); }
 
@@ -122,65 +116,15 @@ errvt moduleMethod(DevicesManager, release, devID id){
 return OK;
 }
 
-errvt moduleMethod(DevicesManager, addResource, 
-	devID id, 
-	ifob(env_Common_Devices_Resource) resource
-){
-	nonull(self, resource.interface, resource.object){ return err; }
-	if(!id)	    { return nullerr(id); }
-
-	Device* dev = index(&priv.registeredDevices, id);
 	
-	if(!dev)
-		return ERR(ERR.FAIL, "failed to find device from the device ID");
-	
-	if(dev->resources.__type)
-		if(create(List, &dev->resources,
-			.type = cT(ifob(env_Common_Devices_Resource))
-	    	) == nil)
-			return ERR(ERR.INIT, "failed to initalize device resources list");
-	
-	if(!write(&dev->resources, &resource)){
-		return ERR(ERR.FAIL, "failed to add resources to device");
-	}
-
-return OK;
-}
-
-
-errvt moduleMethod(DevicesManager, removeResource, 
-	devID id, 
-	env_Common_Devices_Resource_ID resource
-){
-	nonull(self)		{ return err; }
-	if(!id || !resource)    { return nullerr(id); }
-
-	Device* dev = index(&priv.registeredDevices, id);
-	
-	if(!dev)
-		return ERR(ERR.FAIL, "failed to find device from the device ID");
-	
-	if(dev->resources.__type)
-		if(create(List, &dev->resources,
-			.type = cT(ifob(env_Common_Devices_Resource))
-	    	) == nil)
-			return ERR(ERR.INIT, "failed to initalize device resources list");
-	
-	if(!write(&dev->resources, &resource)){
-		return ERR(ERR.FAIL, "failed to add resources to device");
-	}
-
-return OK;
-}
-	
-construct(env_Common_DevicesManager,
+construct(env_Common_Devices_Manager,
 FMT(),
 DEF(),
 	
 ){
 	create(List, &priv.registeredDevices,
-		.type 	   = cT(Device),
-		.init_size = 10
+		.type 	   	= cT(Device),
+		.init_size 	= 10
 	);
 
 
