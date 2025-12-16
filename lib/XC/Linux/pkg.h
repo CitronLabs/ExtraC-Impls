@@ -29,8 +29,23 @@ SOFTWARE.
 
 
 #ifndef __ENV_LINUX__
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <pthread.h>
+#include <bits/pthreadtypes.h>
+#include <sys/ptrace.h>
+#include <sys/wait.h>
+#include <semaphore.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/un.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <sys/epoll.h>
 
-#include "OS/pkg.h"
 #include "Runtime/pkg.h"
 
 #define package env
@@ -41,7 +56,6 @@ Interface(Linux,
 	MINOR,
 	PATCH
   )	
-	interface(env_Linux_OS) 		OS;
 	interface(env_Linux_Runtime) 	Runtime;
   
 

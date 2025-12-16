@@ -3,7 +3,6 @@
 #include <XC/pkg.h>
 #include <Core/pkg.c>
 
-#include "OS/pkg.c"
 #include "Runtime/pkg.c"
 #include "Lib/pkg.c"
 
