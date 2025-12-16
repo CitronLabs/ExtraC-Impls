@@ -34,7 +34,7 @@ SOFTWARE.
 #define package env
 
 Interface(Common,
-  	interface(env_Common_DevicesManager) Devices;
+  	interface(env_Common_Devices) 	     Devices;
   	interface(env_Common_Posix)   	     Posix;
 
 );

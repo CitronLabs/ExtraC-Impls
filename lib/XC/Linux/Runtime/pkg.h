@@ -9,7 +9,7 @@
 
 Interface(Runtime,
   submodule(Devices,
-	env_Common_DevicesManager*      fn(getManager)();	
+	env_Common_Devices_Manager*     fn(getManager)();	
 	env_Common_Devices_ID    	fn(getIO)();	
 	env_Common_Devices_ID    	fn(getLocal)();	
 	env_Common_Devices_ID    	fn(getSys)();	

@@ -1,3 +1,15 @@
 #pragma once
-#define __PKG
-#include "./DevicesManager_pkg.c"
+#include "./Manager/pkg.c"
+
+#define module env, Common, Devices
+
+export(
+SUBMODULE(Manager), 
+VALUES(), 
+
+)
+
+
+#undef module
+
+
