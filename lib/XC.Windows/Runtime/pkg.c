@@ -19,7 +19,7 @@ VALUES(),
 exportFrom(PATH(Device, Resource, StdErr),
 SUBMODULE(),
 VALUES(),
-	open, close, delete, edit,
+	edit,
 	writeTo, readFrom, watch,  shift, sync, 
 	control, info, flush, isModified
 )
@@ -27,7 +27,7 @@ VALUES(),
 exportFrom(PATH(Device, Resource, StdOut),
 SUBMODULE(),
 VALUES(),
-	open, close, delete, edit,
+	edit,
 	writeTo, readFrom, watch,  shift, sync, 
 	control, info, flush, isModified
 )
@@ -35,7 +35,7 @@ VALUES(),
 exportFrom(PATH(Device, Resource, StdIn),
 SUBMODULE(),
 VALUES(),
-	open, close, delete, edit,
+	edit,
 	writeTo, readFrom, watch,  shift, sync, 
 	control, info, flush, isModified
 )

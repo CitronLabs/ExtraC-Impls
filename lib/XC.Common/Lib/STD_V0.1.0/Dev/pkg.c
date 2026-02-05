@@ -19,7 +19,7 @@ VALUES(),
 exportFrom(Modify,
 SUBMODULE(),
 VALUES(),
-	open, close, delete, watch, isModified, 
+	watch, isModified, 
 	info, writeTo, readFrom, setTo, access
 )
 
@@ -59,7 +59,7 @@ VALUES(Attrib, ID),
 exportFrom(PATH(Type, DIR),
 SUBMODULE(),
 VALUES(),
-	open, close, delete, watch, isModified, 
+	watch, isModified,
 	info, writeTo, readFrom, shift, sync, 
 	flush, control
 )
@@ -67,7 +67,7 @@ VALUES(),
 exportFrom(PATH(Type, FILE),
 SUBMODULE(),
 VALUES(),
-	open, close, delete, watch, isModified, 
+	watch, isModified,
 	info, writeTo, readFrom, shift, sync, 
 	flush, control
 )
@@ -75,7 +75,7 @@ VALUES(),
 exportFrom(Modify,
 SUBMODULE(),
 VALUES(),
-	open, close, delete, watch, isModified, 
+	watch, isModified, 
 	info, writeTo, readFrom, shift, sync, 
 	flush, control
 )

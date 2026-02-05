@@ -3,4 +3,4 @@
 
 #define module env, Windows, Runtime, Memory
 
-alias(env.Windows.Utils, 	   WinUtils)
+alias(env.Windows.Lib, 	   WinLib)

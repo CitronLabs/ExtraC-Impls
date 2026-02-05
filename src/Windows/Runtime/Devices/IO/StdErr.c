@@ -1,17 +1,9 @@
 #include "../Device.h"
 
-static struct {	
-	HANDLE handle; 
-	len_t lastSize;
-	len_t currentSize;
-	WORD type;
-
-} StdErr;
-
 errvt moduleFn(Resource_StdErr_open)(streamHandle handle, bool create){
 	var StdErrResource = Dev.Resource.getOne(
 		WinRTDev.getManager(),
-		WinRTDev.getSys(),
+		WinRTDev.getIO(),
 		(pntrval)handle
 	);
 
@@ -82,7 +74,8 @@ return (streamInfo){
 .currentPos    	= 0,
 .time_created  	= 0,
 .time_modified 	= 0,
-.size 		= StdErr.currentSize
+.size 		= StdErr.currentSize,
+.valid 		= true
 };
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 #define __ENV_WINDOWS__
 #include "../pkg.h"
+#include "../Lib/pkg.h"
 
 
 #ifndef __ENV_WINDOWS_RUNTIME__
@@ -9,18 +10,6 @@
 Interface(Runtime,
   submodule(Memory,
 	
-	void fn(init)();
-  )
-  submodule(Console,
-	values(StreamType, word,
-		OUTPUT,
-		INPUT,
-		ERR
-	)
-
-	HANDLE fn(getStream)(word);
-	void fn(getInfo)(word);
-
 	void fn(init)();
   )
   submodule(Device,

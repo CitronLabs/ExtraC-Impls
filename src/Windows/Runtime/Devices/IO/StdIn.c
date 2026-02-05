@@ -1,29 +1,7 @@
 #include "../Device.h"
 
 static struct {	
-	HANDLE handle; 
-	len_t lastSize;
-	len_t currentSize;
-	WORD type;
 } StdIn;
-
-errvt moduleFn(Resource_StdIn_open)(streamHandle handle, bool create){
-	var StdInResource = Dev.Resource.getOne(
-		WinRTDev.getManager(),
-		WinRTDev.getSys(),
-		(pntrval)handle
-	);
-
-	if(StdInResource == nil){
-		return ERR(ERR.INVALID, "Invalid handle");
-	}
-	
-	StdIn.handle = WinRTCon.getStream(WinRTCon.StreamType.INPUT);
-
-	StdInResource->data = &StdIn;
-
-return OK;
-}
 
 errvt moduleFn(Resource_StdIn_close)(streamHandle handle){ 
 	return ERR(ERR.INVALID, "Cannot close XC.IO:/Console/StdIn"); 
@@ -54,13 +32,20 @@ len_t moduleFn(Resource_StdIn_shift)(streamHandle handle, word offset, len_t fro
 		return 0;
 	}
 
-	u8 buffer[50] = {};
+	len_t bytesRead = 0;
 
-	if(!ReadFile(StdIn.handle, &buffer, offset, NULL, NULL)){
-		 
-	}
-	
+	u8 buffer[250] = {};
 
+	do {
+	    DWORD iter_bytesRead = 0;
+	    if(!ReadFile(StdIn.handle, &buffer, (offset -= 250) > 250 ? 250 : offset, &iter_bytesRead, NULL))
+		break;
+
+	    bytesRead += iter_bytesRead;
+	} 
+	while(offset > 250);
+
+return bytesRead;
 }
 len_t moduleFn(Resource_StdIn_readFrom)(streamHandle handle, void* buffer, len_t size){
 	DWORD bytesRead = 0;

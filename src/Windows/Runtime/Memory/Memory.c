@@ -22,11 +22,6 @@ LONG moduleFn(FaultHandler)(struct _EXCEPTION_POINTERS* info){
 	}
 }
 
-void moduleFn()(){
-
-
-}
-
 void moduleFn(init)(){
 
 	AddVectoredContinueHandler(

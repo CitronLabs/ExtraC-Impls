@@ -2,7 +2,6 @@
 
 static bool isInit = false;
 
-
 HANDLE moduleFn(getStream)(word id){
 	if(!isInit) mod(init)();
 

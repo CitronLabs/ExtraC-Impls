@@ -1,15 +1,87 @@
 #include "../Device.h"
 
-errvt moduleFn(Resource_WorkDir_open)(registerHandle handle, bool create);	
-errvt moduleFn(Resource_WorkDir_close)(registerHandle handle);	
-errvt moduleFn(Resource_WorkDir_delete)(registerHandle handle);	
-errvt moduleFn(Resource_WorkDir_edit)(registerHandle handle, const char* name, word attributes);
-errvt moduleFn(Resource_WorkDir_watch)(registerHandle handle);
-len_t moduleFn(Resource_WorkDir_isModified)(registerHandle handle);
+static struct { WCHAR path[MAX_PATH]; } WorkDir;
 
-len_t moduleFn(Resource_WorkDir_readFrom)(registerHandle handle, const void* buffer, len_t size);
-len_t moduleFn(Resource_WorkDir_writeTo) (registerHandle handle, const void* buffer, len_t size);
-len_t moduleFn(Resource_WorkDir_setTo)   (registerHandle handle, const void* buffer, len_t size);
-void* moduleFn(Resource_WorkDir_access)  (registerHandle handle);
+errvt moduleFn(Resource_WorkDir_open)(registerHandle handle, bool create){
+	var WorkDirResource = Dev.Resource.getOne(
+		WinRTDev.getManager(),
+		WinRTDev.getIO(),
+		(pntrval)handle
+	);
+	
+	if(WorkDirResource == nil){
+		return ERR(ERR.INVALID, "Invalid handle");
+	}
+	
+	WorkDirResource->data = &WorkDir;
 
-registerInfo moduleFn(Resource_WorkDir_info)(registerHandle handle);
+return OK;
+}
+
+errvt moduleFn(Resource_WorkDir_close)(registerHandle handle){
+	return ERR(ERR.INVALID, "Cannot close XC.IO:/WorkDir"); 
+}
+errvt moduleFn(Resource_WorkDir_delete)(registerHandle handle){
+	return ERR(ERR.INVALID, "Cannot delete XC.IO:/WorkDir"); 
+}
+errvt moduleFn(Resource_WorkDir_edit)(registerHandle handle, const char* name, word attributes){
+	return ERR(ERR.INVALID, "Cannot edit XC.IO:/WorkDir properties"); 
+}
+errvt moduleFn(Resource_WorkDir_watch)(registerHandle handle){
+	GetCurrentDirectoryW(MAX_PATH, WorkDir.path);
+return OK;
+}
+len_t moduleFn(Resource_WorkDir_isModified)(registerHandle handle){
+	WCHAR newPath[MAX_PATH] = {};
+	bool result = true;
+	
+	GetCurrentDirectoryW(MAX_PATH, newPath);
+
+return !strncmp((strc16)WorkDir.path, (strc16)newPath, MAX_PATH);
+}
+
+len_t moduleFn(Resource_WorkDir_readFrom)(registerHandle handle, const void* buffer, len_t size){
+	nonull(buffer) return err;
+
+	if(size > MAX_PATH) size = MAX_PATH;
+
+	memcpy(generic buffer, WorkDir.path, size);
+
+return size;
+}
+len_t moduleFn(Resource_WorkDir_writeTo)(registerHandle handle, const void* buffer, len_t size){
+	nonull(buffer) return err;
+
+	if(size > MAX_PATH) size = MAX_PATH;
+
+	memcpy(WorkDir.path, generic buffer, size);
+
+return size;
+}
+len_t moduleFn(Resource_WorkDir_setTo)(registerHandle handle, const void* buffer, len_t size){
+	nonull(buffer) return err;
+
+	if(size > MAX_PATH) size = MAX_PATH;
+
+	memcpy(WorkDir.path, generic buffer, size);
+
+return size;
+}
+void* moduleFn(Resource_WorkDir_access)(registerHandle handle){
+	ERR(ERR.INVALID, "Direct access not allowed for XC.IO:/WorkDir"); 
+return nil;
+}
+
+registerInfo moduleFn(Resource_WorkDir_info)(registerHandle handle){
+return (registerInfo){
+.name 		= "WorkDir",
+.path 		= "XC.IO:/WorkDir",
+.attributes 	= core.Device.Register.Attrib.READ | core.Device.Register.Attrib.WRITE,
+.type 		= nil,
+.time_created 	= 0,
+.time_modified 	= 0,
+.currentPos 	= 0,
+.size 		= strnlen((strc16)WorkDir.path, MAX_PATH),
+.valid 		= true
+};
+}

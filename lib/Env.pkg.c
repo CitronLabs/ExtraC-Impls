@@ -4,7 +4,6 @@
 
 
 #if defined(__TUNDRA__) && defined(USE_TUNDRA)
-	#include "XC.Windows/pkg.c"
 	#define OS_SUBMODULE  Tundra
 #else
     #if defined(__linux__) || defined(__linux) || defined(linux)

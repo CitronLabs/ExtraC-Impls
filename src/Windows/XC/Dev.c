@@ -25,17 +25,16 @@ return nil;
 
 devHandle moduleFn(stdHandle)(word id){
 
-	switch(id){
-	case XC_Dev_ID_IO:{
+	switchV(id){
+	caseV(core.Device.ID.IO){
 		return (devHandle)(pntrval)env.Windows.Runtime.Device.getIO();
 	break;}
-	case XC_Dev_ID_Sys:{
+	caseV(core.Device.ID.Sys){
 		return (devHandle)(pntrval)env.Windows.Runtime.Device.getSys();
 	break;}
-	default: {
-		ERR(ERR.INVALID, "invalid std device handle id");
-		return nil;
 	}
-	}
+
+ERR(ERR.INVALID, "invalid std device handle id");
+return nil;
 }
 

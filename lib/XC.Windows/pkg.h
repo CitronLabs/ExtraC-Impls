@@ -32,7 +32,7 @@ SOFTWARE.
 #ifndef __ENV_WINDOWS__
 
 #include "Runtime/pkg.h"
-#include "Utils/pkg.h"
+#include "Lib/pkg.h"
 
 #define package env
 
@@ -43,7 +43,12 @@ Interface(Windows,
 	PATCH
   )	
 	interface(env_Windows_Runtime) 	Runtime;
-	interface(env_Windows_Utils) 	Utils;
+
+	submodule(Lib,
+		interface(env_Windows_Lib_FS) 	   FS;
+		interface(env_Windows_Lib_Error)   Error;
+		interface(env_Windows_Lib_Console) Console;
+	)
 
 	submodule(XC,
 		interface(XC_Core) Core;

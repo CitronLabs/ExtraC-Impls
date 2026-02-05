@@ -1,7 +1,12 @@
 #include "../Device.h"
 
+from(env_Windows_Lib, 
+	FS_File as File,
+	FS_Dir  as Dir,
+
+);
+
 static struct IODevice {
-	std_Map fileLookup;
 	rsrcID 
 		stdErrID,
       		stdOutID,
@@ -50,30 +55,53 @@ static inline pntr moduleFn(IO_Open_Stream)(const char* path, word attributes, v
 	var devManager     = WinRTDev.getManager();
 	var IO_DevID       = WinRTDev.getIO();
 	rsrcID   result    = -1;
-	rsrcID*  foundFile = std.Map.Search(&IODevice.fileLookup, asString(path, PATH_MAX));
+	rsrcID*  cachedFile = Dev.Resource.find(devManager, IO_DevID, path);
 
-	if(foundFile){
-		result = *foundFile;
+	if(cachedFile){
+		result = *cachedFile;
 
 		Dev.Resource.grab(devManager, IO_DevID, result);
 	} else {
 
-		rsrcInfo fileInfo = {
+		rsrcInfo streamInfo = {
 			.attributes = attributes,
 			.interface  = interface,
 			.type 	    = Dev.Resource.Type.STREAM
 		};
 
-		rsrcID fileID = Dev.Resource.add(devManager, IO_DevID, fileInfo);
+		pntr streamData = nil;
 
-		if(fileID == -1 || Dev.Resource.init(devManager, IO_DevID, fileID, create) != OK){
-			ERR(ERR.FAIL, "Failed initialize file resource to IO device");
+		if(!create){
+		    var entry = WinLib.FS.info(path);
+		    var type = 
+			interface == &core.Device.Stream.Type.FILE ?
+				WinLib.FS.Type.FILE : WinLib.FS.Type.DIR;
+
+		    if(!entry.exists || entry.type != type){
+			return nil; // We dont ERR because this comes from a fetch call
+		    }
+		}
+
+		if(interface == &core.Device.Stream.Type.FILE)
+			streamData = new(File, path, attributes);
+		else
+			streamData = new(Dir, path, attributes);
+
+		if(streamData == nil){
+			ERR(ERR.FAIL, "Failed initialize resource to IO device");
 			return nil;
 		}
 
-		Dev.Resource.grab(devManager, IO_DevID, fileID);
+		rsrcID streamID = Dev.Resource.add(devManager, IO_DevID, streamInfo, streamData);
 
-		result = fileID;
+		if(streamID == -1){
+			ERR(ERR.FAIL, "Failed register resource to IO device");
+			return nil;
+		}
+
+		Dev.Resource.grab(devManager, IO_DevID, streamID);
+
+		result = streamID;
 	}
 	
 return (pntr)(pntrval)result;
@@ -82,25 +110,25 @@ return (pntr)(pntrval)result;
 static inline errvt moduleFn(IO_InitStdResources)(){
 	var devManager = WinRTDev.getManager();
 	var IO_DevID   = WinRTDev.getIO();
+	
+	IODevice.stdInID = Dev.Resource.add(devManager, IO_DevID, StdIn_Info, nil);
 
-	IODevice.stdInID = Dev.Resource.add(devManager, IO_DevID, StdIn_Info);
+	if(IODevice.stdInID == -1)
+		return ERR(ERR.INIT, "Failed to initialize XC.IO:/Console/StdIn resource");
 
-	if(IODevice.stdInID == -1 || Dev.Resource.init(devManager, IO_DevID, IODevice.stdInID, true) != OK)
-		return ERR(ERR.INIT, "Failed to initialize Console.StdIn resource");
+	IODevice.stdErrID = Dev.Resource.add(devManager, IO_DevID, StdErr_Info, nil);
 
-	IODevice.stdErrID = Dev.Resource.add(devManager, IO_DevID, StdErr_Info);
+	if(IODevice.stdErrID == -1)
+		return ERR(ERR.INIT, "Failed to initialize XC.IO:/Console/StdErr resource");
 
-	if(IODevice.stdErrID == -1 || Dev.Resource.init(devManager, IO_DevID, IODevice.stdErrID, true) != OK)
-		return ERR(ERR.INIT, "Failed to initialize Console.StdErr resource");
+	IODevice.stdOutID = Dev.Resource.add(devManager, IO_DevID, StdOut_Info, nil);
 
-	IODevice.stdOutID = Dev.Resource.add(devManager, IO_DevID, StdOut_Info);
+	if(IODevice.stdOutID == -1)
+		return ERR(ERR.INIT, "Failed to initialize XC.IO:/Console.StdOut resource");
 
-	if(IODevice.stdOutID == -1 || Dev.Resource.init(devManager, IO_DevID, IODevice.stdOutID, true) != OK)
-		return ERR(ERR.INIT, "Failed to initialize Console.StdOut resource");
+	IODevice.workDirID = Dev.Resource.add(devManager, IO_DevID, WorkDir_Info, nil);
 
-	IODevice.workDirID = Dev.Resource.add(devManager, IO_DevID, WorkDir_Info);
-
-	if(IODevice.workDirID == -1 || Dev.Resource.init(devManager, IO_DevID, IODevice.workDirID, true) != OK)
+	if(IODevice.workDirID == -1)
 		return ERR(ERR.INIT, "Failed to initialize WorkDir resource");
 
 return OK;
@@ -233,15 +261,13 @@ errvt moduleFn(IO_Delete)(word resourceType, pntr handle){
 	}
 	caseV(core.Device.Resource.Stream){
 
-		var streamInfo = Dev.Resource.getOne(
+		var stream = Dev.Resource.getOne(
 			WinRTDev.getManager(),
 			WinRTDev.getIO(),
 			(pntrval)handle
-		)->info;
+		);
 
-		iferr(((stream_Interface*)streamInfo.interface)
-			->delete(handle)
-		){ return err; }
+		del(stream->data);
 
 		return OK;
 		

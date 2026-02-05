@@ -69,12 +69,12 @@ static inline errvt moduleFn(Sys_InitStdResources)(){
 
 	SysDevice.cliargsID = Dev.Resource.add(devManager, Sys_DevID, CliArgs_Info);
 
-	if(SysDevice.cliargsID == -1 || Dev.Resource.init(devManager, Sys_DevID, SysDevice.cliargsID, true) != OK)
+	if(SysDevice.cliargsID == -1)
 		return ERR(ERR.INIT, "Failed to initialize CliArgs resource");
 
 	SysDevice.localeID = Dev.Resource.add(devManager, Sys_DevID, Locale_Info);
 
-	if(SysDevice.localeID == -1 || Dev.Resource.init(devManager, Sys_DevID, SysDevice.localeID, true) != OK)
+	if(SysDevice.localeID == -1)
 		return ERR(ERR.INIT, "Failed to initialize Locale resource");
 
 return OK;
