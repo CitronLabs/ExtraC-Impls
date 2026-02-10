@@ -13,7 +13,6 @@ from(env_Common_Devices,
 )
 
 alias(env.Windows.Runtime.Device,  WinRTDev)
-alias(env.Windows.Runtime.Console, WinRTCon)
 alias(env.Windows.Lib, 	   	   WinLib)
 alias(env.Common.Devices.Manager,  Dev)
 alias(core.Device.Attrib, 	   DevAttrib)

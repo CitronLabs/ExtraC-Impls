@@ -2,31 +2,6 @@
 
 static struct { WCHAR path[MAX_PATH]; } WorkDir;
 
-errvt moduleFn(Resource_WorkDir_open)(registerHandle handle, bool create){
-	var WorkDirResource = Dev.Resource.getOne(
-		WinRTDev.getManager(),
-		WinRTDev.getIO(),
-		(pntrval)handle
-	);
-	
-	if(WorkDirResource == nil){
-		return ERR(ERR.INVALID, "Invalid handle");
-	}
-	
-	WorkDirResource->data = &WorkDir;
-
-return OK;
-}
-
-errvt moduleFn(Resource_WorkDir_close)(registerHandle handle){
-	return ERR(ERR.INVALID, "Cannot close XC.IO:/WorkDir"); 
-}
-errvt moduleFn(Resource_WorkDir_delete)(registerHandle handle){
-	return ERR(ERR.INVALID, "Cannot delete XC.IO:/WorkDir"); 
-}
-errvt moduleFn(Resource_WorkDir_edit)(registerHandle handle, const char* name, word attributes){
-	return ERR(ERR.INVALID, "Cannot edit XC.IO:/WorkDir properties"); 
-}
 errvt moduleFn(Resource_WorkDir_watch)(registerHandle handle){
 	GetCurrentDirectoryW(MAX_PATH, WorkDir.path);
 return OK;

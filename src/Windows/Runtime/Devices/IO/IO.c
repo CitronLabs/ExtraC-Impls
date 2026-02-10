@@ -3,18 +3,28 @@
 from(env_Windows_Lib, 
 	FS_File as File,
 	FS_Dir  as Dir,
+     	use(Console)
 
 );
 
 static struct IODevice {
+	Console console;
 	rsrcID 
 		stdErrID,
       		stdOutID,
       		stdInID,
+		consoleID,
       		workDirID;
 } IODevice;
 
 static const rsrcInfo 
+Console_Info = {
+.name 		= "Console",
+.path 		= "Console",
+.interface 	= &WinRTDev.Resource.Console,
+.type 		= Dev.Resource.Type.STREAM,
+.attributes 	= core.Device.Stream.Attrib.READ | core.Device.Stream.Attrib.WRITE
+},
 StdIn_Info = {
 .name 		= "StdIn",
 .path 		= "Console/StdIn",
@@ -55,10 +65,10 @@ static inline pntr moduleFn(IO_Open_Stream)(const char* path, word attributes, v
 	var devManager     = WinRTDev.getManager();
 	var IO_DevID       = WinRTDev.getIO();
 	rsrcID   result    = -1;
-	rsrcID*  cachedFile = Dev.Resource.find(devManager, IO_DevID, path);
+	rsrcID  cachedFile = Dev.Resource.find(devManager, IO_DevID, generic path);
 
 	if(cachedFile){
-		result = *cachedFile;
+		result = cachedFile;
 
 		Dev.Resource.grab(devManager, IO_DevID, result);
 	} else {
@@ -111,22 +121,31 @@ static inline errvt moduleFn(IO_InitStdResources)(){
 	var devManager = WinRTDev.getManager();
 	var IO_DevID   = WinRTDev.getIO();
 	
-	IODevice.stdInID = Dev.Resource.add(devManager, IO_DevID, StdIn_Info, nil);
+	if(!create(Console, &IODevice.console, .outBuffSize = 1024)){
+		return ERR(ERR.INIT, "Failed to initialize XC.IO:/Console");
+	}
+
+	IODevice.consoleID = Dev.Resource.add(devManager, IO_DevID, Console_Info, &IODevice.console);
+
+	if(IODevice.consoleID == -1)
+		return ERR(ERR.INIT, "Failed to initialize XC.IO:/Console resource");
+
+	IODevice.stdInID = Dev.Resource.add(devManager, IO_DevID, StdIn_Info, &IODevice.console);
 
 	if(IODevice.stdInID == -1)
 		return ERR(ERR.INIT, "Failed to initialize XC.IO:/Console/StdIn resource");
 
-	IODevice.stdErrID = Dev.Resource.add(devManager, IO_DevID, StdErr_Info, nil);
+	IODevice.stdErrID = Dev.Resource.add(devManager, IO_DevID, StdErr_Info, &IODevice.console);
 
 	if(IODevice.stdErrID == -1)
 		return ERR(ERR.INIT, "Failed to initialize XC.IO:/Console/StdErr resource");
 
-	IODevice.stdOutID = Dev.Resource.add(devManager, IO_DevID, StdOut_Info, nil);
+	IODevice.stdOutID = Dev.Resource.add(devManager, IO_DevID, StdOut_Info, &IODevice.console);
 
 	if(IODevice.stdOutID == -1)
 		return ERR(ERR.INIT, "Failed to initialize XC.IO:/Console.StdOut resource");
 
-	IODevice.workDirID = Dev.Resource.add(devManager, IO_DevID, WorkDir_Info, nil);
+	IODevice.workDirID = Dev.Resource.add(devManager, IO_DevID, WorkDir_Info, &IODevice.console);
 
 	if(IODevice.workDirID == -1)
 		return ERR(ERR.INIT, "Failed to initialize WorkDir resource");
@@ -140,14 +159,6 @@ pntr moduleFn(IO_Open)(word resource, const char* name, word attributes, void* t
 	switchV(resource){
 	caseV(core.Device.Resource.Device){
 
-		if(create(std_Map, &IODevice.fileLookup,
-			.key  = T(std_String),
-	    		.data = T(rsrcID),
-	 	) == nil){
-			ERR(ERR.INIT, "Failed to create file cache for the XC.IO device");
-			return nil;
-		}
-		
 		iferr(mod(IO_InitStdResources)()){
 			ERR(ERR.INIT, "Failed to initliaze standard resources for the XC.IO device");
 			return nil;

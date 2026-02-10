@@ -1,48 +1,20 @@
 #include "../Device.h"
 
-errvt moduleFn(Resource_StdErr_open)(streamHandle handle, bool create){
-	var StdErrResource = Dev.Resource.getOne(
-		WinRTDev.getManager(),
-		WinRTDev.getIO(),
-		(pntrval)handle
-	);
+from(env_Windows_Lib, 
+     	use(Console)
+);
 
-	if(StdErrResource == nil){
-		return ERR(ERR.INVALID, "Invalid handle");
-	}
-	
-	StdErr.handle = WinRTCon.getStream(WinRTCon.StreamType.ERR);
-
-	StdErrResource->data = &StdErr;
-
-return OK;
-}
-
-errvt moduleFn(Resource_StdErr_close)(streamHandle handle){ 
-	return ERR(ERR.INVALID, "Cannot close XC.IO:/Console/StdErr"); 
-}
-
-errvt moduleFn(Resource_StdErr_delete)(streamHandle handle){ 
-	return ERR(ERR.INVALID, "Cannot delete XC.IO:/Console/StdErr"); 
-}
-
-errvt moduleFn(Resource_StdErr_edit)(streamHandle handle, const char* name, word attributes){
-	return ERR(ERR.INVALID, "Cannot edit XC.IO:/Console/StdErr"); 
-}
+static struct {
+	Console* console;
+} StdErr;
 
 errvt moduleFn(Resource_StdErr_watch)(streamHandle handle){
-
-	mod(Resource_StdErr_sync)(handle);
-	StdErr.lastSize  	= StdErr.currentSize;
-
-return OK;
+	return ERR(ERR.INVALID, "Cannot watch XC.IO:/Console/StdErr"); 
 }
 
 len_t moduleFn(Resource_StdErr_isModified)(streamHandle handle){
-	
-	mod(Resource_StdErr_sync)(handle);
-
-return StdErr.currentSize - StdErr.lastSize;
+	ERR(ERR.INVALID, "Cannot watch XC.IO:/Console/StdErr"); 
+	return 0;
 }
 
 len_t moduleFn(Resource_StdErr_shift)(streamHandle handle, word offset, len_t from){
@@ -56,13 +28,10 @@ len_t moduleFn(Resource_StdErr_readFrom)(streamHandle handle, void* buffer, len_
 }
 
 len_t moduleFn(Resource_StdErr_writeTo)(streamHandle handle, const void* buffer, len_t size){
-	DWORD bytesWritten = 0;
-	if(!WriteFile(StdErr.handle, buffer, size, &bytesWritten, NULL)){
-		ERR(ERR.FAIL, "Failed to write to XC.IO:/Console/StdErr");
-		return 0;
-	}
+	
+	if(!StdErr.console) mod(Resource_StdErr_sync)(handle);
 
-return bytesWritten;
+return WinLib.Console.writeErr(StdErr.console, buffer, size);
 }
 
 streamInfo moduleFn(Resource_StdErr_info)(streamHandle handle){
@@ -74,7 +43,7 @@ return (streamInfo){
 .currentPos    	= 0,
 .time_created  	= 0,
 .time_modified 	= 0,
-.size 		= StdErr.currentSize,
+.size 		= 0,
 .valid 		= true
 };
 }
@@ -82,4 +51,19 @@ return (streamInfo){
 errvt moduleFn(Resource_StdErr_control)(streamHandle handle, word command, void* args){ return OK; }
 errvt moduleFn(Resource_StdErr_flush)(streamHandle handle){ return OK; }
 errvt moduleFn(Resource_StdErr_sync)(streamHandle handle){ 
+
+	var stdErrResource = Dev.Resource.getOne(
+		WinRTDev.getManager(),
+		WinRTDev.getIO(),
+		(pntrval)handle
+	);
+
+	if(!stdErrResource){
+		ERR(ERR.FAIL, "Failed to access XC.IO:/Console/StdErr");
+		return 0;
+	}
+
+	StdErr.console = stdErrResource->data;
+
+return OK; 
 }
