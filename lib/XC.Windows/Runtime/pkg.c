@@ -19,7 +19,6 @@ VALUES(),
 exportFrom(PATH(Device, Resource, StdErr),
 SUBMODULE(),
 VALUES(),
-	edit,
 	writeTo, readFrom, watch,  shift, sync, 
 	control, info, flush, isModified
 )
@@ -27,7 +26,6 @@ VALUES(),
 exportFrom(PATH(Device, Resource, StdOut),
 SUBMODULE(),
 VALUES(),
-	edit,
 	writeTo, readFrom, watch,  shift, sync, 
 	control, info, flush, isModified
 )
@@ -35,7 +33,13 @@ VALUES(),
 exportFrom(PATH(Device, Resource, StdIn),
 SUBMODULE(),
 VALUES(),
-	edit,
+	writeTo, readFrom, watch,  shift, sync, 
+	control, info, flush, isModified
+)
+
+exportFrom(PATH(Device, Resource, Console),
+SUBMODULE(),
+VALUES(),
 	writeTo, readFrom, watch,  shift, sync, 
 	control, info, flush, isModified
 )
@@ -43,7 +47,6 @@ VALUES(),
 exportFrom(PATH(Device, Resource, Locale),
 SUBMODULE(),
 VALUES(),
-	open, close, delete, edit,
 	writeTo, readFrom, setTo, watch,  
 	access, info, isModified
 )
@@ -51,7 +54,6 @@ VALUES(),
 exportFrom(PATH(Device, Resource, WorkDir),
 SUBMODULE(),
 VALUES(),
-	open, close, delete, edit,
 	writeTo, readFrom, setTo, watch,  
 	access, info, isModified
 )
@@ -59,13 +61,12 @@ VALUES(),
 exportFrom(PATH(Device, Resource, CliArgs),
 SUBMODULE(),
 VALUES(),
-	open, close, delete, edit,
 	writeTo, readFrom, setTo, watch,  
 	access, info, isModified
 )
 
 exportFrom(PATH(Device, Resource),
-SUBMODULE(StdIn, StdOut, StdErr, Locale, CliArgs),
+SUBMODULE(StdIn, StdOut, StdErr, Console, Locale, CliArgs),
 VALUES(),
 )
 
@@ -75,18 +76,6 @@ VALUES(),
 	getManager, getIO, getSys, init
 )
 
-moduleValues(PATH(Console, StreamType),
-	INPUT,,
-	OUTPUT,,
-	ERR,,
-)
-
-exportFrom(Console,
-SUBMODULE(),
-VALUES(),
-	init, getInfo, getStream
-)
-
 exportFrom(Memory,
 SUBMODULE(),
 VALUES(),
@@ -94,7 +83,7 @@ VALUES(),
 )
 
 export(
-SUBMODULE(Console, Device, Memory),
+SUBMODULE(Device, Memory),
 VALUES(),
 	init
 )

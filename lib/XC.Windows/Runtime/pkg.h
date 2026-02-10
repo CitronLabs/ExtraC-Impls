@@ -9,8 +9,7 @@
 
 Interface(Runtime,
   submodule(Memory,
-	
-	void fn(init)();
+	errvt fn(init)();
   )
   submodule(Device,
 	errvt 				fn(init)();
@@ -22,6 +21,7 @@ Interface(Runtime,
 
 	submodule(Resource,
 		interface(stream)
+	   		Console,
 	   		StdOut,
 	   		StdIn,
 	   		StdErr;

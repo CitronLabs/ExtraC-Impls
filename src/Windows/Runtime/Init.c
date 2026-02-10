@@ -39,15 +39,18 @@ static void moduleFn(runConstructors)() {
 void moduleFn(init)(){
 	int argCount;
 	
+	iferr(env.Windows.Runtime.Memory.init())
+		printlnErr("Failed to initialize runtime device system:");
+
 	iferr(env.Windows.Runtime.Device.init())
-		printlnErr("Failed to initialize runtime device system:", $(std.Error.Get()));
+		printlnErr("Failed to initialize runtime device system:");
 	
 
 	errvt exitcode = 
 		__MAIN_APP.start(args());
 	
 	if(exitcode != OK)
-		printlnErr("Process Exited with error:", $(std.Error.Get()));
+		printlnErr("Process Exited with error:");
 	else 
 		printlnErr("Process Exited OK");
 	

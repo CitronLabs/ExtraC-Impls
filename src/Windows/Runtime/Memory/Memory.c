@@ -22,7 +22,7 @@ LONG moduleFn(FaultHandler)(struct _EXCEPTION_POINTERS* info){
 	}
 }
 
-void moduleFn(init)(){
+errvt moduleFn(init)(){
 
 	AddVectoredContinueHandler(
 		true,
