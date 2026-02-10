@@ -4,7 +4,7 @@
 
 
 #ifndef __ENV_WINDOWS_RUNTIME__
-#define package env_Windows_Lib_Console
+#define package env_Windows_Lib
 
 Class(Console,
 INIT(len_t outBuffSize),
@@ -22,11 +22,18 @@ private(
     } error;
 )
 ){
-	len_t fn(writeErr)(constpntr buffer, len_t len);
-	len_t fn(readIn)(pntr buffer, len_t len);
+	values(Stream, uword,
+		INPUT,
+		OUTPUT,
+		ERROR
+	)
+	len_t method(Console, writeErr, constpntr buffer, len_t len);
+	len_t method(Console, readIn, pntr buffer, len_t len);
 
-	len_t fn(writeOut)(constpntr buffer, len_t len);
-	len_t fn(flush)();
+	len_t method(Console, writeOut, constpntr buffer, len_t len);
+	len_t method(Console, flush);
+
+	HANDLE method(Console, getHandle, uword stream);
 };
 
 
