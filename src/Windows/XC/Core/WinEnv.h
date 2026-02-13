@@ -3,4 +3,5 @@
 #include <shellapi.h>
 
 
-alias(env.Windows.Lib, WinLib)
+alias(env.Windows.Lib, 		  WinLib)
+alias(env.Windows.Runtime.System, WinRTSys)

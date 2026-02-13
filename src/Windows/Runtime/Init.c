@@ -1,10 +1,5 @@
 #include <XC.pkg.c>
-#include <XC.Builtin/Assembly.pkg.h>
-
 #define module env, Windows, Runtime
-
-alias(std.String.Utils.Str, str);
-alias(std.String.Encoding,  encoding);
 
 /* --- SECTION 1: PE/COFF CONTRACT SYMBOLS --- */
 int _fltused = 0x9875;
@@ -58,30 +53,41 @@ void moduleFn(init)(){
 	ExitProcess(exitcode);
 }
 
+void moduleFn(fpuSetup)(){
+    u16   x87_cw    = 0x037F; // Standard: Mask exceptions, 64-bit precision
+    uword sse_mxcsr = 0x1F80; // Standard: Mask exceptions, round to nearest
+
+    __asm__ volatile(
+        ".intel_syntax noprefix\n"
+        "finit\n"                 /* Reset x87 FPU to default state */
+        "fldcw [%0]\n"            /* Load x87 Control Word */
+        "ldmxcsr [%1]\n"          /* Load SSE Control/Status Register */
+        ".att_syntax prefix\n"
+        : 
+        : "r"(&x87_cw), "r"(&sse_mxcsr)
+        : "memory"
+    );
+}
 
 static void moduleFn(start_Stage2)() {
-    u16 fpu_cw = 0x037F;
     
-    asm(
-        cpu_fpu_setup(narg(0))
-        input_ref(fpu_cw)
-    );
-
+    mod(fpuSetup)();
     mod(runConstructors)();
     mod(init)();
     
     ExitProcess(-1);
 }
 
-asmFn _start() {
-    asm(
-        xor(rbp, rbp, rbp)            
-        mov(rsp, r1)                  
-        and(r1, lit(-16), r1)
-        sub(lit(40), r1, rsp)   
-        call(env_Windows_Runtime_start_Stage2)  
-        halt()                        
+[[gnu::naked]] void mainCRTStartup(void) {
+     __asm__ volatile(
+        ".intel_syntax noprefix\n"
+        "xor rbp, rbp\n"          /* Clear frame pointer */
+        "mov rdx, rsp\n"          /* Capture current stack pointer */
+        "and rsp, -16\n"          /* Align stack to 16 bytes */
+        "sub rsp, 40\n"           /* 32 bytes shadow space + 8 bytes to maintain alignment */
+        "call %0\n"               /* Jump to Stage 2 */
+        "hlt\n"                   /* Safety trap */
+        ".att_syntax prefix\n"
+        : : "i"(env_Windows_Runtime_start_Stage2) : "memory"
     );
 }
-
-
