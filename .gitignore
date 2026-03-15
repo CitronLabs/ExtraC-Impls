@@ -1,1 +1,3 @@
 .clangd
+.tracker_config.json
+docs/Issues/.bin
