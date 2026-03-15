@@ -1,8 +1,4 @@
-#include "../Device.h"
-
-from(env_Windows_Lib, 
-     	use(Console)
-);
+#include "../IO.h"
 
 static struct {
 	Console* console;
@@ -39,7 +35,7 @@ return (streamInfo){
 .name 		= "Console",
 .path 		= "Console",
 .attributes 	= core.Device.Stream.Attrib.READ,
-.type 		= nil,
+.type 		= WinRT.IO.Resource.Console.type,
 .currentPos    	= 0,
 .time_created  	= 0,
 .time_modified 	= 0,

@@ -1,8 +1,4 @@
-#include "../Device.h"
-
-from(env_Windows_Lib, 
-     	use(Console)
-);
+#include "../IO.h"
 
 static struct {
 	Console* console;
@@ -53,8 +49,8 @@ errvt moduleFn(Resource_StdErr_flush)(streamHandle handle){ return OK; }
 errvt moduleFn(Resource_StdErr_sync)(streamHandle handle){ 
 
 	var stdErrResource = Dev.Resource.getOne(
-		WinRTDev.getManager(),
-		WinRTDev.getIO(),
+		WinRT.Resource.getManager(),
+		WinRT.IO.getID(),
 		(pntrval)handle
 	);
 

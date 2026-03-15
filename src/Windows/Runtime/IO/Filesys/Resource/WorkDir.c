@@ -1,4 +1,4 @@
-#include "../Device.h"
+#include "../IO.h"
 
 static struct { WCHAR path[MAX_PATH]; } WorkDir;
 

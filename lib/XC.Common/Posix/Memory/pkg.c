@@ -1,5 +1,5 @@
 #pragma once
-#include <XC/pkg.h>
+#include <XC.pkg.h>
 #define module env, Common, Posix, Dynlib
 
 export(

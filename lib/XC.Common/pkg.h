@@ -23,7 +23,7 @@ SOFTWARE.
 ---------------------------------------------------------------------------*/
 #pragma once
 
-#include <XC.Core/pkg.h>
+#include <XC.pkg.h>
 
 
 #ifndef __ENV_COMMON__

@@ -1,22 +1,6 @@
-#include <XC.pkg.c>
+#include "Runtime.h"
+#include "Symbols.h"
 #define module env, Windows, Runtime
-
-/* --- SECTION 1: PE/COFF CONTRACT SYMBOLS --- */
-int _fltused = 0x9875;
-u64 _tls_index = 0;
-
-extern byte __tls_start__;
-extern byte __tls_end__;
-
-[[gnu::section(".rdata$T")]]
-const IMAGE_TLS_DIRECTORY64 _tls_used = {
-    (ULONGLONG)&__tls_start__, (ULONGLONG)&__tls_end__,
-    (ULONGLONG)&_tls_index,    (ULONGLONG)0, 0, 0
-};
-
-/* --- SECTION 2: BRACKETED CONSTRUCTORS --- */
-[[gnu::section(".CRT$XCA")]] void (*__xc_init_start[0])();
-[[gnu::section(".CRT$XCZ")]] void (*__xc_init_end[0])();
 
 static void moduleFn(runConstructors)() {
     void (**ptr)() = __xc_init_start;
@@ -29,18 +13,50 @@ static void moduleFn(runConstructors)() {
 
 }
 
-/* --- SECTION 3: ENTRY POINT --- */
+static void moduleFn(setupFPU)(){
+    unsigned short x87_cw = 0x037F; // Standard: Mask exceptions, 64-bit precision
+    unsigned int sse_mxcsr = 0x1F80; // Standard: Mask exceptions, round to nearest
+
+    __asm__ __volatile__ (
+        ".intel_syntax noprefix\n"
+        "finit\n"                 /* Reset x87 FPU to default state */
+        "fldcw [%0]\n"            /* Load x87 Control Word */
+        "ldmxcsr [%1]\n"          /* Load SSE Control/Status Register */
+        ".att_syntax prefix\n"
+        : 
+        : "r"(&x87_cw), "r"(&sse_mxcsr)
+        : "memory"
+    );
+}
+
 
 void moduleFn(init)(){
-	int argCount;
 	
-	iferr(env.Windows.Runtime.Memory.init())
-		printlnErr("Failed to initialize runtime device system:");
+	iferr(env.Windows.Runtime.Resource.init()){
+		printlnErr("Failed to initialize XC resource system");
+		ExitProcess(-1);
+	}
 
-	iferr(env.Windows.Runtime.Device.init())
-		printlnErr("Failed to initialize runtime device system:");
+	if(env.Windows.Runtime.Memory.getID() == -1){
+		printlnErr("Failed to initialize XC.Memory device");
+		ExitProcess(-1);
+	}
+
+	if(env.Windows.Runtime.IO.getID() == -1){
+		printlnErr("Failed to initialize XC.IO device");
+		ExitProcess(-1);
+	}
+
+	if(env.Windows.Runtime.Scheduler.getID() == -1){
+		printlnErr("Failed to initialize XC.Scheduler device");
+		ExitProcess(-1);
+	}
+
+	if(env.Windows.Runtime.Sys.getID() == -1){
+		printlnErr("Failed to initialize XC.Sys device");
+		ExitProcess(-1);
+	}
 	
-
 	errvt exitcode = 
 		__MAIN_APP.start(args());
 	
@@ -53,33 +69,18 @@ void moduleFn(init)(){
 	ExitProcess(exitcode);
 }
 
-void moduleFn(fpuSetup)(){
-    u16   x87_cw    = 0x037F; // Standard: Mask exceptions, 64-bit precision
-    uword sse_mxcsr = 0x1F80; // Standard: Mask exceptions, round to nearest
-
-    __asm__ volatile(
-        ".intel_syntax noprefix\n"
-        "finit\n"                 /* Reset x87 FPU to default state */
-        "fldcw [%0]\n"            /* Load x87 Control Word */
-        "ldmxcsr [%1]\n"          /* Load SSE Control/Status Register */
-        ".att_syntax prefix\n"
-        : 
-        : "r"(&x87_cw), "r"(&sse_mxcsr)
-        : "memory"
-    );
-}
-
 static void moduleFn(start_Stage2)() {
     
-    mod(fpuSetup)();
+
+    mod(setupFPU)();
     mod(runConstructors)();
     mod(init)();
     
     ExitProcess(-1);
 }
 
-[[gnu::naked]] void mainCRTStartup(void) {
-     __asm__ volatile(
+[[gnu::naked]] void _start(void) {
+    __asm__ __volatile__ (
         ".intel_syntax noprefix\n"
         "xor rbp, rbp\n"          /* Clear frame pointer */
         "mov rdx, rsp\n"          /* Capture current stack pointer */

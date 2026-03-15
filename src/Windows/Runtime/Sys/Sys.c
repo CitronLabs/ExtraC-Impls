@@ -1,39 +1,21 @@
-#include "../Device.h"
+#include "Sys.h"
 
-static struct {
-	std_Map envVarLookup;
-	rsrcID
-       		cliargsID,
-       		localeID;
-} SysDevice = {};
+static inline pntr moduleFn(Sys_Open_Register)(const char* name, word attributes, void* interface, bool create){
 
-static const rsrcInfo 
-CliArgs_Info = {
-.name 		= "CliArgs",
-.path 		= "CliArgs",
-.interface 	= &WinRTDev.Resource.Locale,
-.type 		= Dev.Resource.Type.STREAM,
-.attributes 	= core.Device.Stream.Attrib.READ 
-},
-Locale_Info = {
-.name 		= "Locale",
-.path 		= "Locale",
-.interface 	= &WinRTDev.Resource.CliArgs,
-.type 		= Dev.Resource.Type.REGISTER,
-.attributes 	= core.Device.Stream.Attrib.READ | core.Device.Stream.Attrib.WRITE
-};
+	var type = ((register_Interface*)interface)->type;
 
-static inline pntr moduleFn(Sys_Open_EnvVar)(const char* name, word attributes, void* interface, bool create){
-
-	if(interface != &core.Device.Register.Type.ENV_VAR){
-		ERR(ERR.FAIL, "Invalid stream type for XC.IO device, can only FILE or DIR");
+	if(
+	   type != &system.Device.Register.Type.ENV_VAR || 
+	   type != &system.Device.Register.Type.MODULE
+	){
+		ERR(ERR.FAIL, "Invalid stream type for XC.Sys device, can only ENV_VAR or MODULE");
 		return nil;
 	}
 
-	var devManager     = WinRTDev.getManager();
-	var IO_DevID       = WinRTDev.getIO();
+	var devManager     = WinRT.Resource.getManager();
+	var IO_DevID       = WinRT.Sys.getID();
 	rsrcID   result    = -1;
-	rsrcID*  foundFile = std.Map.Search(&SysDevice.envVarLookup, asString(name, 255));
+	rsrcID*  foundFile = std.Map.Search(&System.envVarLookup, asString(name, 255));
 
 	if(foundFile){
 		result = *foundFile;
@@ -64,17 +46,17 @@ return (pntr)(pntrval)result;
 }
 
 static inline errvt moduleFn(Sys_InitStdResources)(){
-	var devManager = WinRTDev.getManager();
-	var Sys_DevID   = WinRTDev.getSys();
+	var devManager = WinRT.Resource.getManager();
+	var Sys_DevID   = WinRT.Sys.getID();
 
-	SysDevice.cliargsID = Dev.Resource.add(devManager, Sys_DevID, CliArgs_Info);
+	System.cliargsID = Dev.Resource.add(devManager, Sys_DevID, CliArgs_Info);
 
-	if(SysDevice.cliargsID == -1)
+	if(System.cliargsID == -1)
 		return ERR(ERR.INIT, "Failed to initialize CliArgs resource");
 
-	SysDevice.localeID = Dev.Resource.add(devManager, Sys_DevID, Locale_Info);
+	System.localeID = Dev.Resource.add(devManager, Sys_DevID, Locale_Info);
 
-	if(SysDevice.localeID == -1)
+	if(System.localeID == -1)
 		return ERR(ERR.INIT, "Failed to initialize Locale resource");
 
 return OK;
@@ -83,12 +65,12 @@ return OK;
 pntr moduleFn(Sys_Open)(word resource, const char* name, word attributes, void* type){
 	nonull(name) return nil;
 	
-	Manager* devManager = WinRTDev.getManager();
+	Manager* devManager = WinRT.Resource.getManager();
 
 	switchV(resource){
-	caseV(core.Device.Resource.Device){
+	caseV(system.Device.Resource.Device){
 
-		if(create(std_Map, &SysDevice.envVarLookup,
+		if(create(std_Map, &System.envVarLookup,
 			.key  = T(std_String),
 	    		.data = T(rsrcID),
 	 	) == nil){
@@ -101,9 +83,9 @@ pntr moduleFn(Sys_Open)(word resource, const char* name, word attributes, void* 
 			return nil;
 		}
 
-		return &SysDevice;
+		return &System;
 	}
-	caseV(core.Device.Resource.Register){ return mod(Sys_Open_EnvVar)(name, attributes, type, true); }
+	caseV(system.Device.Resource.Register){ return mod(Sys_Open_EnvVar)(name, attributes, type, true); }
 	defaultV{
 		ERR(ERR.INVALID, 
       			"XC.Sys device does not allow "
@@ -122,17 +104,17 @@ return nil;
 
 errvt moduleFn(Sys_Close)(word resource, pntr handle){
 	switchV(resource){
-	caseV(core.Device.Resource.Device){
+	caseV(system.Device.Resource.Device){
 		return ERR(ERR.INVALID, 
       			"XC.Sys device does not allow "
       			"creation, deletion, or modification "
       			"itself by users"
 		);
 	}
-	caseV(core.Device.Resource.Register){
+	caseV(system.Device.Resource.Register){
 		iferr(Dev.Resource.remove(
-			WinRTDev.getManager(),
-			WinRTDev.getSys(),
+			WinRT.Resource.getManager(),
+			WinRT.Sys.getID(),
 			pntr_asVal(handle)
 		)){
 		    return ERR(ERR.FAIL, 
@@ -156,17 +138,17 @@ return ERR(ERR.NOTIMPLEM, "unreachable code reached");
 
 errvt moduleFn(Sys_Edit)(word resourceType, pntr handle, const char* name, word attributes){
 	switchV(resourceType){
-	caseV(core.Device.Resource.Device){
+	caseV(system.Device.Resource.Device){
 		return ERR(ERR.INVALID, 
       			"XC.Sys device does not allow "
       			"creation, deletion, or modification "
       			"itself by users"
 		);
 	}
-	caseV(core.Device.Resource.Register){
+	caseV(system.Device.Resource.Register){
 		var streamInfo = Dev.Resource.getOne(
-			WinRTDev.getManager(),
-			WinRTDev.getIO(),
+			WinRT.Resource.getManager(),
+			WinRT.Sys.getID(),
 			(pntrval)handle
 		)->info;
 
@@ -189,7 +171,7 @@ return ERR(ERR.NOTIMPLEM, "unreachable code reached");
 
 pntr moduleFn(Sys_Fetch)(word resourceType, const char* name, word attributes, void* type){
 	switchV(resourceType){
-	caseV(core.Device.Resource.Device){
+	caseV(system.Device.Resource.Device){
 	    ERR(ERR.INVALID, 
       	    	"XC.Sys device does not "
       	    	"allow multiple handles "
@@ -197,7 +179,7 @@ pntr moduleFn(Sys_Fetch)(word resourceType, const char* name, word attributes, v
       	    );
 	    return nil;
 	}
-	caseV(core.Device.Resource.Register){ return mod(Sys_Open_EnvVar)(name, attributes, type, false); }
+	caseV(system.Device.Resource.Register){ return mod(Sys_Open_EnvVar)(name, attributes, type, false); }
 	defaultV{
 		ERR(ERR.INVALID, 
       			"XC.Sys device does not allow "
@@ -213,17 +195,17 @@ return nil;
 
 errvt moduleFn(Sys_Delete)(word resourceType, pntr handle){
 	switchV(resourceType){
-	caseV(core.Device.Resource.Device){
+	caseV(system.Device.Resource.Device){
 		return ERR(ERR.INVALID, 
       			"XC.Sys device does not allow "
       			"creation, deletion, or modification "
       			"itself by users"
 		);
 	}
-	caseV(core.Device.Resource.Register){
+	caseV(system.Device.Resource.Register){
 		var streamInfo = Dev.Resource.getOne(
-			WinRTDev.getManager(),
-			WinRTDev.getIO(),
+			WinRT.Resource.getManager(),
+			WinRT.Sys.getID(),
 			(pntrval)handle
 		)->info;
 
@@ -245,7 +227,7 @@ return ERR(ERR.NOTIMPLEM, "unreachable code reached");
 }
 
 deviceInfo moduleFn(Sys_Info)(devHandle handle){
-return Dev.getOne(WinRTDev.getManager(), WinRTDev.getSys())->info;
+return Dev.getOne(WinRT.Resource.getManager(), WinRT.Sys.getID())->info;
 }
 
 

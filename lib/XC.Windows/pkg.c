@@ -2,6 +2,7 @@
 #include <Env.pkg.h>
 
 #include "Runtime/pkg.c"
+#include "Devices/pkg.c"
 
 #define module env, Windows
 

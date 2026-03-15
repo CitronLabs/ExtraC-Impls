@@ -35,7 +35,7 @@ private(
 		SHARE,
 		COMMIT
 	)
-	errvt method(Memory, open, std_FSPath memObjPath);
+	errvt method(Memory, open, std_FS_Path memObjPath);
 	errvt method(Memory, setProt, u16 flags);
 	errvt method(Memory, setSwappable, bool swappable);
 	errvt method(Memory, commit);

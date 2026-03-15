@@ -7,51 +7,28 @@
 #ifndef __ENV_WINDOWS_RUNTIME__
 #define package env_Windows
 
+struct __xc_stateData {
+	u64 magic,
+
+	rbx, rbp, r12, r13, 
+	r14, r15, rsp, rip,
+    	rdi, rsi; 
+};
+
+
 Interface(Runtime,
-  submodule(Memory,
-	errvt fn(init)();
-  )
-  submodule(Device,
-	errvt 				fn(init)();
-	env_Common_Devices_Manager*     fn(getManager)();
-
-	env_Common_Devices_ID fn(getIO)(), fn(getSys)();
-
-	interface(device) IO, Sys;
-
-	submodule(Resource,
-		interface(stream)
-	   		Console,
-	   		StdOut,
-	   		StdIn,
-	   		StdErr;
-
-	   	interface(register)
-	    		Locale, 
-	    		WorkDir, 
-	    		CliArgs;
-	)
-  )
-  submodule(System,
-    submodule(Scheduler,
-      submodule(Thread,
 	
-      )
-      submodule(Process,
-	processHandle	fn(current)();
-	processHandle 	fn(run)(const char* path, const char* args);
-	errvt 		fn(kill)(processHandle);
+	submodule(Resource,
+		env_Common_Devices_Manager*     
+	   		fn(getManager)();
+		
+		std_Memory*     
+	   		fn(getMemory)();
 
-      )
-	errvt 		fn(init)();
-    )
-    submodule(Module,
-	moduleHandle 	fn(load)(const char* module, uword flags);
-	errvt 		fn(unload)(moduleHandle);
-	pntr 		fn(symbol)(moduleHandle, const char* symbol);
-	errvt 		fn(init)();
-    )
-  )
+	   	errvt fn(init)();
+	)
+
+
 	void fn(init)();
 )
 

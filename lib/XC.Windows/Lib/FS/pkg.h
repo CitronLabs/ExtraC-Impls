@@ -9,8 +9,16 @@
 Class(File,
 INIT(const c8* path; word attributes),
 FMT(),
-
+	std_FS_Path path;
+	word attributes;
+	
+	struct {
+	    len_t modified, created;
+	} time;
+	
 ){
+	errvt method(File, watch);
+	len_t method(File, isModified);
 
 };
 

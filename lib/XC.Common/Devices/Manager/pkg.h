@@ -7,22 +7,16 @@
 #ifndef __ENV_COMMON_DEVICES_MANAGER__
 #define package env_Common_Devices
 
+Interface(Manager,
+	errvt fn(init)(ifob(std_Allocator) allocator);
 
-Class(Manager,
-INIT(),
-FMT(),
+	pntr fn(getResource)(pntr handle);
+/*
+	pkg(Entry)* 	fn(getOne)(pkg(ID) id);
+	errvt 	  	fn(getAll)(std_Array_Buffer* envDevices);
+	pkg(ID) 	fn(add)(deviceInfo info, intf(device) type, void* data);
 
-
-private(
-	List(Entry)  	registeredDevices;
-      	Map(String, ID)	pathResolve;
-)
-){
-	pkg(Entry)* 	method(Manager, getOne, 	pkg(ID) id);
-	errvt 	  	method(Manager, getAll, 	std_Array_Buffer* envDevices);
-	pkg(ID) 	method(Manager, add,   		deviceInfo info, intf(device) type, void* data);
-
-	pkg(ID) 	method(Manager, find, 		strc8 path);
+	pkg(ID) 	method(Manager, find, 		fmtStr name);
 	errvt 	  	method(Manager, remove, 	pkg(ID) id);
 	bool 	  	method(Manager, isConnected, 	pkg(ID) id);
 	errvt 	  	method(Manager, disconnect, 	pkg(ID) id);
@@ -30,10 +24,7 @@ private(
 	errvt 	  	method(Manager, release, 	pkg(ID) id);
 
   submodule(Resource,
-	values(Type, pkg(ResourceType),
-		STREAM,
-		REGISTER
-	)
+
 	errvt 		method(Manager, grab, 	 pkg(ID) id, pkg(ResourceID) resource);
 	errvt 		method(Manager, release, pkg(ID) id, pkg(ResourceID) resource);
 	len_t 		method(Manager, usage,   pkg(ID) id, pkg(ResourceID) resource);
@@ -44,7 +35,8 @@ private(
 
 	errvt		method(Manager, remove,	 pkg(ID) id, pkg(ResourceID) resource);
   )
-};
+*/
+);
 
 #undef package
 #endif

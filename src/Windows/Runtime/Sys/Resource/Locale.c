@@ -93,8 +93,8 @@ return OK;
 
 errvt moduleFn(Sys_Locale_open)(registerHandle handle, bool create){
 	var LocaleResource = Dev.Resource.getOne(
-		WinRTDev.getManager(),
-		WinRTDev.getSys(),
+		WinRT.getManager(),
+		WinRT.getSys(),
 		(pntrval)handle
 	);
 
@@ -118,8 +118,8 @@ return OK;
 
 errvt moduleFn(Sys_Locale_close)(registerHandle handle){
 	var LocaleResource = Dev.Resource.getOne(
-		WinRTDev.getManager(),
-		WinRTDev.getSys(),
+		WinRT.getManager(),
+		WinRT.getSys(),
 		(pntrval)handle
 	);
 
@@ -137,8 +137,8 @@ return OK;
 }
 errvt moduleFn(Sys_Locale_isModified)(registerHandle handle){
 	var LocaleResource = Dev.Resource.getOne(
-		WinRTDev.getManager(),
-		WinRTDev.getSys(),
+		WinRT.getManager(),
+		WinRT.getSys(),
 		(pntrval)handle
 	);
 
@@ -156,8 +156,8 @@ len_t moduleFn(Sys_Locale_readFrom)(registerHandle handle, const void* buffer, l
 	}
 
 	var LocaleResource = Dev.Resource.getOne(
-		WinRTDev.getManager(),
-		WinRTDev.getSys(),
+		WinRT.getManager(),
+		WinRT.getSys(),
 		(pntrval)handle
 	);
 
@@ -172,8 +172,8 @@ return sizeof(XC_Locale_Data);
 }
 len_t moduleFn(Sys_Locale_writeTo) (registerHandle handle, const void* buffer, len_t size){
 	var LocaleResource = Dev.Resource.getOne(
-		WinRTDev.getManager(),
-		WinRTDev.getSys(),
+		WinRT.getManager(),
+		WinRT.getSys(),
 		(pntrval)handle
 	);
 
@@ -188,8 +188,8 @@ return sizeof(XC_Locale_Data);
 }
 len_t moduleFn(Sys_Locale_setTo)   (registerHandle handle, const void* buffer, len_t size){
 	var LocaleResource = Dev.Resource.getOne(
-		WinRTDev.getManager(),
-		WinRTDev.getSys(),
+		WinRT.getManager(),
+		WinRT.getSys(),
 		(pntrval)handle
 	);
 

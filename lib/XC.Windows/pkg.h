@@ -25,13 +25,13 @@ SOFTWARE.
 
 #include "API/pkg.h"
 
-#include <XC.Core/pkg.h>
-#include <XC.OS/pkg.h>
+#include <XC.pkg.h>
 #include "../XC.Common/pkg.h"
 
 #ifndef __ENV_WINDOWS__
 
 #include "Runtime/pkg.h"
+#include "Devices/pkg.h"
 #include "Lib/pkg.h"
 
 #define package env
@@ -48,11 +48,7 @@ Interface(Windows,
 		interface(env_Windows_Lib_FS) 	   FS;
 		interface(env_Windows_Lib_Error)   Error;
 		interface(env_Windows_Lib_Console) Console;
-	)
-
-	submodule(XC,
-		interface(XC_Core) Core;
-		interface(XC_Sys)  Sys;
+		interface(env_Windows_Lib_Exec)    Exec;
 	)
 );
 

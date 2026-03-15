@@ -1,8 +1,4 @@
-#include "../Device.h"
-
-from(env_Windows_Lib, 
-     	use(Console)
-);
+#include "../IO.h"
 
 static struct {
 	DWORD type;
@@ -175,8 +171,8 @@ errvt moduleFn(Resource_StdIn_flush)(streamHandle handle){ return OK; }
 errvt moduleFn(Resource_StdIn_sync)(streamHandle handle){ 
 	
 	var stdInResource = Dev.Resource.getOne(
-		WinRTDev.getManager(),
-		WinRTDev.getIO(),
+		WinRT.Resource.getManager(),
+		WinRT.IO.getID(),
 		(pntrval)handle
 	);
 
